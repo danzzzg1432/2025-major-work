@@ -8,7 +8,7 @@ print("Pygame initialized")
 # Screen dimensions
 WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Isometric Grid")
+pygame.display.set_caption("armaan sodhi's isometric grid")
 print("Screen initialized")
 
 # Colors
@@ -39,6 +39,10 @@ def draw_grid():
 def main():
     print("Starting main loop")
     clock = pygame.time.Clock()
+    
+    # Load the image
+    image = pygame.image.load('sussy_image.png')
+    image = pygame.transform.scale(image, (200, 200))
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -48,6 +52,10 @@ def main():
 
         screen.fill(WHITE)
         draw_grid()
+        
+        # Display the image
+        screen.blit(image, (200, 50))  # Change (0, 0) to the desired position
+        
         pygame.display.flip()
         clock.tick(60)
         print("Frame updated")
