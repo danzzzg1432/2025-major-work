@@ -1,0 +1,5 @@
+---
+triple:          'arm64-apple-darwin'
+binary-path:     '/Users/unblank/2025 Software Major Work/2025-major-work/testing/test'
+relocations:     []
+...
