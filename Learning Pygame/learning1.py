@@ -13,4 +13,6 @@ while True:
         if event.type == pygame.QUIT: # Basically, if the red x is pressed it will exit out of the program
             sys.exit()
 
+
+
     
