@@ -19,7 +19,7 @@ text_surface = olivia_monkey_font.render("Credit: Olivia, my donkeymonkey sister
 
 olivia_surf = pygame.image.load('learning_pygame\\Monkey-Selfie.png').convert_alpha() # initialise the surface again
 
-olivia_rect = olivia_surf.get_rect() #(position, (x,y)) # initialise a float rectangle (Frect instead of rect for more customisation) that encompasses the surface 
+olivia_rect = olivia_surf.get_rect() # ARGUMENTS: (position, (x,y)) # initialise a float rectangle (Frect instead of rect for more customisation) that encompasses the surface 
 while True:
     for event in pygame.event.get(): # for loop that runs over ALL user inputs. exits when X is pressed
         if event.type == pygame.QUIT:
