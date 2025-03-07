@@ -277,4 +277,4 @@ while True:
 		else: screen.blit(score_message,score_message_rect)
 
 	pygame.display.update()
-	clock.tick(60)
+	clock.tick(600)
