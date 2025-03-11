@@ -1,4 +1,5 @@
 import pygame
+import sys
 from game_constants import *  # Import all constants
 from game_classes import *
 
@@ -16,13 +17,13 @@ font = pygame.font.Font(None, DEFAULT_FONT_SIZE)
 # background = pygame.image.load(f"{IMAGES_DIR}/background.png")
 
 # Define buttons based on storyboard layout
-button_x = SCREEN_WIDTH // 2 - BUTTON_WIDTH // 2
 
+main_button_x = (SCREEN_WIDTH-BUTTON_WIDTH) // 2
 buttons = [
-    Button(button_x, 200, BUTTON_WIDTH, BUTTON_HEIGHT, "Start Game", GRAY, font, BLACK),
-    Button(button_x, 280, BUTTON_WIDTH, BUTTON_HEIGHT, "Load Game", GRAY, font, BLACK),
-    Button(button_x, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "Settings", GRAY, font, BLACK),
-    Button(button_x, 440, BUTTON_WIDTH, BUTTON_HEIGHT, "Quit", GRAY, font, BLACK)
+    Button(main_button_x, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "Start Game", GRAY, font, BLACK),
+    Button(main_button_x, 440, BUTTON_WIDTH, BUTTON_HEIGHT, "Load Game", GRAY, font, BLACK),
+    Button(main_button_x, 520, BUTTON_WIDTH, BUTTON_HEIGHT, "Settings", GRAY, font, BLACK),
+    Button(main_button_x, 600, BUTTON_WIDTH, BUTTON_HEIGHT, "Quit", GRAY, font, BLACK)
 ]
 
 # Main loop
@@ -31,8 +32,7 @@ running = True
 clock = pygame.time.Clock()
 
 while running:
-    screen.fill(WHITE)  # Set background colour (Replace with actual background image later)
-    # screen.blit(background, (0, 0)) 
+    screen.fill(WHITE)  # Set background colour (Replace with actual background image later) 
     
     mouse_pos = pygame.mouse.get_pos()
 
