@@ -26,14 +26,14 @@ class Button:
     def is_hovered(self, pos):
         return self.rect.collidepoint(pos)
 
-# Login Screen Class
-class LoginScreen:
-    def __init__(self, screen, font):
-        self.screen = screen
-        self.font = font
-        self.title_font = pygame.font.Font(None, MAIN_MENU_LOGO_SIZE)
-        self.buttons = self.create_buttons()
-    pass
+# # Login Screen Class
+# class LoginScreen:
+#     def __init__(self, screen, font):
+#         self.screen = screen
+#         self.font = font
+#         self.title_font = pygame.font.Font(None, MAIN_MENU_LOGO_SIZE)
+#         self.buttons = self.create_buttons()
+#     pass
 
 
 # Main Menu Class
@@ -91,11 +91,11 @@ class MainMenu:
 
 # Shop Class
 
-class ShopMenu:
-    def __init__(self, screen, font):
-        self.screen = screen
-        self.font = font
-        self.title_font = pygame.font.Font(None, MAIN_MENU_LOGO_SIZE)
-        self.buttons = self.create_buttons()
-    pass
+# class ShopMenu:
+#     def __init__(self, screen, font):
+#         self.screen = screen
+#         self.font = font
+#         self.title_font = pygame.font.Font(None, MAIN_MENU_LOGO_SIZE)
+#         self.buttons = self.create_buttons()
+#     pass
 
