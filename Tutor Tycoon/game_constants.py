@@ -44,7 +44,7 @@ SETTINGS_MENU = "settings_menu"
 SHOP_MENU = "shop_menu"
 
 # Font Settings
-MAIN_MENU_LOGO_SIZE = 60
+MAIN_MENU_LOGO_SIZE = 90
 
 # Main Menu stuff
 background = pygame.image.load(f"{IMAGES_DIR}/dr_du_logo.png")

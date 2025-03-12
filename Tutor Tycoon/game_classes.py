@@ -8,6 +8,7 @@ BLACK = (0, 0, 0)
 GRAY = (200, 200, 200)
 DARK_GRAY = (150, 150, 150)
 
+# Button Class
 class Button:
     def __init__(self, x, y, width, height, text, colour, font, text_colour):
         self.rect = pygame.Rect(x, y, width, height)
@@ -25,6 +26,17 @@ class Button:
     def is_hovered(self, pos):
         return self.rect.collidepoint(pos)
 
+# Login Screen Class
+class LoginScreen:
+    def __init__(self, screen, font):
+        self.screen = screen
+        self.font = font
+        self.title_font = pygame.font.Font(None, MAIN_MENU_LOGO_SIZE)
+        self.buttons = self.create_buttons()
+    pass
+
+
+# Main Menu Class
 class MainMenu:
     def __init__(self, screen, font):
         self.screen = screen
@@ -49,14 +61,16 @@ class MainMenu:
 
     def handle_events(self, events):
         for event in events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 for button in self.buttons:
                     if button.is_hovered(mouse_pos):
                         if button.text == "Quit":
                             pygame.quit()
                             sys.exit()
-                        # other button actions here
         return True
 
     def update(self):
@@ -75,6 +89,13 @@ class MainMenu:
             button.draw(self.screen)
         pygame.display.flip()
 
-class Shop:
+# Shop Class
+
+class ShopMenu:
+    def __init__(self, screen, font):
+        self.screen = screen
+        self.font = font
+        self.title_font = pygame.font.Font(None, MAIN_MENU_LOGO_SIZE)
+        self.buttons = self.create_buttons()
     pass
 

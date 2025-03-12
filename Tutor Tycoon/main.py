@@ -15,8 +15,10 @@ font = pygame.font.Font(None, DEFAULT_FONT_SIZE)
 
 # Define buttons based on storyboard layout
 
+
 # define main menus
 main_menu = MainMenu(screen, font)
+shop_menu = ShopMenu(screen, font)
 
 
 # Main loop
