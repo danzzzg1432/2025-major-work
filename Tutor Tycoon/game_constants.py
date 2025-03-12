@@ -32,6 +32,7 @@ STARTING_REPUTATION = 0
 ASSETS_DIR = r"Tutor Tycoon/assets"
 IMAGES_DIR = f"{ASSETS_DIR}/images"
 SOUNDS_DIR = f"{ASSETS_DIR}/sounds"
+FONTS_DIR = f"{ASSETS_DIR}/fonts"
 SAVE_DIR = "savestates"
 
 # Save/load settings
@@ -44,7 +45,10 @@ SETTINGS_MENU = "settings_menu"
 SHOP_MENU = "shop_menu"
 
 # Font Settings
+pygame.font.init()
 MAIN_MENU_LOGO_SIZE = 90
+MAIN_MENU_BUTTON_SIZE = 25
+LOGO_FONT = f"{FONTS_DIR}/quicksand_variable.ttf"
 
 # Main Menu stuff
-background = pygame.image.load(f"{IMAGES_DIR}/dr_du_logo.png")
+background = pygame.image.load(f"{IMAGES_DIR}/dr_du_logo.png") # temporary meme background =)

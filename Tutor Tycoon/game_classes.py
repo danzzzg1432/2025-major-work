@@ -10,15 +10,16 @@ DARK_GRAY = (150, 150, 150)
 
 # Button Class
 class Button:
-    def __init__(self, x, y, width, height, text, colour, font, text_colour):
+    def __init__(self, x, y, width, height, text, background_colour, font, text_colour):
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
-        self.colour = colour
+        self.colour = background_colour
+        self.initial_colour = background_colour
         self.font = font
         self.text_colour = text_colour
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.colour, self.rect, border_radius=10)
+        pygame.draw.rect(screen, self.colour, self.rect, border_radius=30)
         text_surf = self.font.render(self.text, True, self.text_colour)
         text_rect = text_surf.get_rect(center=self.rect.center)
         screen.blit(text_surf, text_rect)
@@ -35,13 +36,19 @@ class Button:
 #         self.buttons = self.create_buttons()
 #     pass
 
+# class MainGame:
+#     def __init__(self, screen, font):
+    
+
+
+
 
 # Main Menu Class
 class MainMenu:
     def __init__(self, screen, font):
         self.screen = screen
-        self.font = font
-        self.title_font = pygame.font.Font(None, MAIN_MENU_LOGO_SIZE)
+        self.button_font = pygame.font.Font(LOGO_FONT, MAIN_MENU_BUTTON_SIZE)
+        self.title_font = pygame.font.Font(LOGO_FONT, MAIN_MENU_LOGO_SIZE)
         self.buttons = self.create_buttons()
 
     def render_title(self):
@@ -53,10 +60,10 @@ class MainMenu:
     def create_buttons(self):
         main_button_x = (SCREEN_WIDTH - BUTTON_WIDTH) // 2
         return [
-            Button(main_button_x, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "Start Game", GRAY, self.font, BLACK),
-            Button(main_button_x, 440, BUTTON_WIDTH, BUTTON_HEIGHT, "Load Game", GRAY, self.font, BLACK),
-            Button(main_button_x, 520, BUTTON_WIDTH, BUTTON_HEIGHT, "Settings", GRAY, self.font, BLACK),
-            Button(main_button_x, 600, BUTTON_WIDTH, BUTTON_HEIGHT, "Quit", GRAY, self.font, BLACK)
+            Button(main_button_x, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "Start Game", "Red", self.button_font, BLACK),
+            Button(main_button_x, 440, BUTTON_WIDTH, BUTTON_HEIGHT, "Load Game", GRAY, self.button_font, BLACK),
+            Button(main_button_x, 520, BUTTON_WIDTH, BUTTON_HEIGHT, "Settings", GRAY, self.button_font, BLACK),
+            Button(main_button_x, 600, BUTTON_WIDTH, BUTTON_HEIGHT, "Quit", GRAY, self.button_font, BLACK)
         ]
 
     def handle_events(self, events):
@@ -79,7 +86,7 @@ class MainMenu:
             if button.is_hovered(mouse_pos):
                 button.colour = DARK_GRAY
             else:
-                button.colour = GRAY
+                button.colour = button.initial_colour
 
     def render(self):
         self.screen.fill(WHITE)  # Set background colour (Replace with actual background image later)
