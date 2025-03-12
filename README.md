@@ -8,3 +8,7 @@ HSC Software Engineering Major Work - Daniel Guo
 
 #### Video Tutorial
 
+
+#### Credits
+Clear Code - YouTube
+PyGame-CE Documentation
