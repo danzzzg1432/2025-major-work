@@ -26,18 +26,72 @@ class Button:
     
     def is_hovered(self, pos):
         return self.rect.collidepoint(pos)
+    
 
-# # Login Screen Class
-# class LoginScreen:
-#     def __init__(self, screen, font):
-#         self.screen = screen
-#         self.font = font
-#         self.title_font = pygame.font.Font(None, MAIN_MENU_LOGO_SIZE)
-#         self.buttons = self.create_buttons()
-#     pass
+class StateManager:
+    def __init__(self):
+        self.state = MAIN_MENU
 
-# class MainGame:
-#     def __init__(self, screen, font):
+    def set_state(self, new_state):
+        self.state = new_state
+
+    def get_state(self):
+        return self.state
+
+
+class MainGame:
+    def __init__(self, screen, state_manager):
+        self.screen = screen
+        self.state_manager = state_manager
+        self.button_font = pygame.font.Font(LOGO_FONT, MAIN_MENU_BUTTON_SIZE)
+        self.title_font = pygame.font.Font(LOGO_FONT, MAIN_MENU_LOGO_SIZE)
+        self.buttons = self.create_buttons()
+
+    def render_title(self):
+        title_surf = self.title_font.render(GAME_TITLE.upper(), True, BLACK)
+        title_rect = title_surf.get_rect(center=(SCREEN_WIDTH // 2, 200))
+        self.screen.blit(title_surf, title_rect)
+
+
+    def create_buttons(self):
+        main_button_x = (SCREEN_WIDTH - BUTTON_WIDTH) // 2
+        return [
+            Button(main_button_x, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "test test", "Red", self.button_font, BLACK),
+            Button(main_button_x, 440, BUTTON_WIDTH, BUTTON_HEIGHT, "test test", GRAY, self.button_font, BLACK),
+            Button(main_button_x, 520, BUTTON_WIDTH, BUTTON_HEIGHT, "test", GRAY, self.button_font, BLACK),
+            Button(main_button_x, 600, BUTTON_WIDTH, BUTTON_HEIGHT, "go back", GRAY, self.button_font, BLACK)
+        ]
+
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                for button in self.buttons:
+                    if button.is_hovered(mouse_pos):
+                        if button.text == "go back":
+                            self.state_manager.set_state(MAIN_MENU)  # Go back to main menu
+        return True
+
+    def update(self):
+        mouse_pos = pygame.mouse.get_pos()
+        for button in self.buttons:
+            if button.is_hovered(mouse_pos):
+                button.colour = DARK_GRAY
+            else:
+                button.colour = button.initial_colour
+
+    def render(self):
+        self.screen.fill(WHITE)  # Set background colour (Replace with actual background image later)
+        self.screen.blit(background)
+        self.render_title()
+        for button in self.buttons:
+            button.draw(self.screen)
+        pygame.display.flip()
+
+
     
 
 
@@ -45,8 +99,9 @@ class Button:
 
 # Main Menu Class
 class MainMenu:
-    def __init__(self, screen, font):
+    def __init__(self, screen, state_manager):
         self.screen = screen
+        self.state_manager = state_manager
         self.button_font = pygame.font.Font(LOGO_FONT, MAIN_MENU_BUTTON_SIZE)
         self.title_font = pygame.font.Font(LOGO_FONT, MAIN_MENU_LOGO_SIZE)
         self.buttons = self.create_buttons()
@@ -78,6 +133,8 @@ class MainMenu:
                         if button.text == "Quit":
                             pygame.quit()
                             sys.exit()
+                        elif button.text == "Start Game":
+                            self.state_manager.set_state(GAME_RUNNING)
         return True
 
     def update(self):
