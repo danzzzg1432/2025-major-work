@@ -1,6 +1,5 @@
-# import necessary libraries
 import pygame
-from game_constants import *  # Import all constants
+from game_constants import *  
 from game_classes import *
 
 # Initialise pygame
@@ -17,16 +16,15 @@ pygame.display.set_caption(f"{GAME_TITLE} - Main Menu")
 state_manager = StateManager()
 main_menu = MainMenu(screen, state_manager)
 main_game = MainGame(screen, state_manager)
-#  shop_menu = ShopMenu(screen, font)
 
 
 # Main loop
 clock = pygame.time.Clock()
 
 while True:
-    events = pygame.event.get() # continuously grab all events
+    events = pygame.event.get() # event handling
 
-    # handling state manager transitions
+    # State manager / Main game loops
     current_state = state_manager.get_state()
     if current_state == MAIN_MENU:
         main_menu_event_handler = main_menu.handle_events(events)

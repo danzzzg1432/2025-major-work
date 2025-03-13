@@ -1,11 +1,17 @@
 import pygame
 
-
 # Screen settings
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 800
 GAME_TITLE = "Idle Tutor Tycoon"
 FPS = 30
+
+# Defining file paths
+ASSETS_DIR = r"Tutor Tycoon/assets"
+IMAGES_DIR = f"{ASSETS_DIR}/images"
+SOUNDS_DIR = f"{ASSETS_DIR}/sounds"
+FONTS_DIR = f"{ASSETS_DIR}/fonts"
+SAVE_DIR = "savestates"
 
 # Colours (RGB values)
 WHITE = (255, 255, 255)
@@ -29,13 +35,14 @@ STARTING_MONEY = 1000
 STARTING_LEVEL = 1
 STARTING_REPUTATION = 0
 
-# File paths
-ASSETS_DIR = r"Tutor Tycoon/assets"
-IMAGES_DIR = f"{ASSETS_DIR}/images"
-SOUNDS_DIR = f"{ASSETS_DIR}/sounds"
-FONTS_DIR = f"{ASSETS_DIR}/fonts"
-SAVE_DIR = "savestates"
+# Font Settings
+pygame.font.init()
+MAIN_MENU_LOGO_SIZE = 90
+MAIN_MENU_BUTTON_SIZE = 25
+LOGO_FONT = f"{FONTS_DIR}/quicksand_variable.ttf"
 
+
+# ---------- LOADING STUFF -----------
 # Save/load settings
 SAVE_FILE_NAME = "save_data.json"
 
@@ -45,11 +52,6 @@ GAME_RUNNING = "game_running"
 SETTINGS_MENU = "settings_menu"
 SHOP_MENU = "shop_menu"
 
-# Font Settings
-pygame.font.init()
-MAIN_MENU_LOGO_SIZE = 90
-MAIN_MENU_BUTTON_SIZE = 25
-LOGO_FONT = f"{FONTS_DIR}/quicksand_variable.ttf"
-
-# Main Menu stuff
-background = pygame.image.load(f"{IMAGES_DIR}/dr_du_logo.png") # temporary meme background =)
+# Load Images
+main_menu_background = pygame.image.load(f"{IMAGES_DIR}/dr_du_logo.png").convert_alpha() # temporary meme background =)
+idle_tutor_tycoon_logo = pygame.image.load(f"{IMAGES_DIR}/itt_logo.png").convert_alpha()
