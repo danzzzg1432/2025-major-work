@@ -1,5 +1,7 @@
 import pygame
 
+pygame.init()
+
 # Screen settings
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 800
@@ -53,5 +55,5 @@ SETTINGS_MENU = "settings_menu"
 SHOP_MENU = "shop_menu"
 
 # Load Images
-main_menu_background = pygame.image.load(f"{IMAGES_DIR}/dr_du_logo.png").convert_alpha() # temporary meme background =)
-idle_tutor_tycoon_logo = pygame.image.load(f"{IMAGES_DIR}/itt_logo.png").convert_alpha()
+main_menu_background = pygame.image.load(f"{IMAGES_DIR}/dr_du_logo.png") # temporary meme background =)
+idle_tutor_tycoon_logo = pygame.image.load(f"{IMAGES_DIR}/itt_logo.png")
