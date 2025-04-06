@@ -31,8 +31,6 @@ state_manager.register_state(REGISTER_MENU, register_menu)
 state_manager.register_state(HELP_MENU, help_menu)
 
 # Other classes
-test_generator = Generator("Test Generator", 1, 10) # test generator object
-me = User("Test User", 0) # test user object
 
 
 # debugging stuff
