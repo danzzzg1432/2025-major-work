@@ -36,7 +36,7 @@ me = User("Test User", 0) # test user object
 
 
 # debugging stuff
-DEBUG_MODE = False  # Set to False in production
+DEBUG_MODE = False  # Set to False in release
 
 if DEBUG_MODE:
     print(state_manager)  # print all registered states
