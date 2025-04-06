@@ -6,7 +6,7 @@ pygame.init()
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 800
 GAME_TITLE = "Idle Tutor Tycoon"
-FPS = 30
+FPS = 60
 
 # Defining file paths
 ASSETS_DIR = r"Tutor Tycoon/assets"
@@ -50,9 +50,13 @@ SAVE_FILE_NAME = "save_data.json"
 
 # Game states
 MAIN_MENU = "main_menu"
-GAME_RUNNING = "game_running"
+GAME_MENU = "game_menu"
 SETTINGS_MENU = "settings_menu"
 SHOP_MENU = "shop_menu"
+LOGIN_MENU = "login_menu"
+REGISTER_MENU = "register_menu"
+HELP_MENU = "help_menu"
+
 
 # Load Images
 main_menu_background = pygame.image.load(f"{IMAGES_DIR}/dr_du_logo.png") # temporary meme background =)
