@@ -19,34 +19,69 @@ class Button: # global button class
     
     def is_hovered(self, pos):
         return self.rect.collidepoint(pos) 
-class Frect:
+
     def __init__(self, x, y , width, height, colour, border_radius=0, border_width=0, border_colour=None):
         self.frect = pygame.FRect(x, y, width, height)
         self.colour = colour
         self.border_radius = border_radius
         self.border_width = border_width
-        self.border_colour = border_colour
+        self.border_colour = border_colour     
+        
+class Generator:
+    def __init__(self, name, rate, price, level=1, amount=0):
+        self.rate = rate
+        self.name = name
+        self.level = level
+        self.amount = amount
+        self.price = price
+        
+    def increase_amount(self):
+        self.amount += 1
+        
+    def generate_money(self):
+        return (self.rate * self.amount * self.level)/60 # money per second as fps is 60, so divide by 60 to get per second as it runs 60 times a second
+
+    
+    
+class User:
+    def __init__(self, money=0):
+        self.generators = {}
+        self.money = money
+    
+    def add_generator(self, generator): # perhaps later include a feature to multiple-buy generators -> add button in the shop menu which switches from 1x, 10x, 100x, then buy that amount probably by passing through the amount in this class
+        if generator.name not in self.generators: # check if generator already exists
+            self.generators[generator.name] = generator
+        generator.increase_amount()
+        
+    def get_money(self):
+        return self.money
+    
+    def set_money(self, money):
+        self.money = money
         
         
-
-
-
-
-
-
+# Screens and Menus
 class StateManager: # global state manager
     def __init__(self):
-        self.state = MAIN_MENU
+        self.state = MAIN_MENU # set initial state to main menu (for now)
+        self.states = {} # dictionary to hold different states
 
-    def set_state(self, new_state):
+    def set_state(self, new_state): # set the state of the game
         self.state = new_state
 
-    def get_state(self):
+    def get_state(self): # get the current state of the game
         return self.state
-
-
-# MAIN MENU 
-class MainMenu:
+    
+    def register_state(self, state_name, state_object): # register a new state
+        self.states[state_name] = state_object
+        
+    def get_state_object(self, state_name): # get the state object of a specific state (use case: returns current state object for the screen)
+        return self.states.get(state_name, None)
+    
+    def __str__(self):
+        state_names = {key: type(value).__name__ for key, value in self.states.items()}
+        return f"Current States: {self.state}, States: {state_names}" # debugging line
+class MainMenu: # Main menu class
     def __init__(self, screen, state_manager):
         self.screen = screen
         self.state_manager = state_manager
@@ -63,7 +98,7 @@ class MainMenu:
     def create_buttons(self):
         main_button_x = (SCREEN_WIDTH - BUTTON_WIDTH) // 2
         return [
-            Button(main_button_x, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "Start Game", "Red", self.button_font, BLACK),
+            Button(main_button_x, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "Start Game", GRAY, self.button_font, BLACK),
             Button(main_button_x, 440, BUTTON_WIDTH, BUTTON_HEIGHT, "Load Game", GRAY, self.button_font, BLACK),
             Button(main_button_x, 520, BUTTON_WIDTH, BUTTON_HEIGHT, "Settings", GRAY, self.button_font, BLACK),
             Button(main_button_x, 600, BUTTON_WIDTH, BUTTON_HEIGHT, "Quit", GRAY, self.button_font, BLACK)
@@ -82,7 +117,7 @@ class MainMenu:
                             pygame.quit()
                             sys.exit()
                         elif button.text == "Start Game":
-                            self.state_manager.set_state(GAME_RUNNING)
+                            self.state_manager.set_state(GAME_MENU)  # Start the game
                         elif button.text == "Settings":
                             pass
                         elif button.text == "Load Game":
@@ -99,16 +134,12 @@ class MainMenu:
 
     def render(self):
         self.screen.fill(WHITE)  # Set background colour
-        self.screen.blit(main_menu_background) # load background image, though will be replaced soon by the Frect and SurfFrect class
+        self.screen.blit(main_menu_background) # load background image
         self.render_title()
         for button in self.buttons:
             button.draw(self.screen)
         pygame.display.flip()
-
-
-
-# MAIN GAME
-class MainGame:
+class GameMenu: # Game menu class, mostly placeholder for now
     def __init__(self, screen, state_manager):
         self.screen = screen
         self.state_manager = state_manager
@@ -151,6 +182,7 @@ class MainGame:
                 button.colour = DARK_GRAY
             else:
                 button.colour = button.initial_colour
+        # for generators in the user object, generate the amount of money. 
 
     def render(self):
         self.screen.fill(BLACK)  # Set background colour (Replace with actual background image later)
@@ -159,9 +191,90 @@ class MainGame:
         for button in self.buttons:
             button.draw(self.screen)
         pygame.display.flip()
+class ShopMenu: # Shop menu class
+    def __init__(self, screen, state_manager):
+        self.screen = screen
+        self.state_manager = state_manager
 
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
 
+    def update(self):
+        pass
 
+    def render(self):
+        self.screen.fill(GRAY)
+        pygame.display.flip()    
+class SettingsMenu: # Settings menu class
+    def __init__(self, screen, state_manager):
+        self.screen = screen
+        self.state_manager = state_manager
 
-class Shop:
-    pass
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+    def update(self):
+        pass
+
+    def render(self):
+        self.screen.fill(GRAY)
+        pygame.display.flip()   
+class LoginMenu: # Login menu class
+    def __init__(self, screen, state_manager):
+        self.screen = screen
+        self.state_manager = state_manager
+
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+    def update(self):
+        pass
+
+    def render(self):
+        self.screen.fill(GRAY)
+        pygame.display.flip()
+class RegisterMenu: # Register menu class
+    def __init__(self, screen, state_manager):
+        self.screen = screen
+        self.state_manager = state_manager
+
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+    def update(self):
+        pass
+
+    def render(self):
+        self.screen.fill(GRAY)
+        pygame.display.flip()         
+class HelpMenu: # Help menu class
+    def __init__(self, screen, state_manager):
+        self.screen = screen
+        self.state_manager = state_manager
+
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+
+    def update(self):
+        pass
+
+    def render(self):
+        self.screen.fill(GRAY)
+        pygame.display.flip()
+
+    
