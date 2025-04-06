@@ -1,6 +1,7 @@
 import pygame
 from game_constants import *  
 from game_classes import *
+import sys
 
 # Initialise pygame
 pygame.init()
@@ -35,7 +36,10 @@ me = User("Test User", 0) # test user object
 
 
 # debugging stuff
-print(state_manager) # print all registered states
+DEBUG_MODE = False  # Set to False in production
+
+if DEBUG_MODE:
+    print(state_manager)  # print all registered states
 
 # Main loop
 clock = pygame.time.Clock()

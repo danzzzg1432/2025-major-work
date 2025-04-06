@@ -44,7 +44,7 @@ class Generator:
     
     
 class User:
-    def __init__(self, money=int):
+    def __init__(self, money=0):
         self.generators = {}
         self.money = money
     
