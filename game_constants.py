@@ -9,7 +9,7 @@ GAME_TITLE = "Idle Tutor Tycoon"
 FPS = 60
 
 # Defining file paths
-ASSETS_DIR = r"Tutor Tycoon/assets"
+ASSETS_DIR = r"assets"
 IMAGES_DIR = f"{ASSETS_DIR}/images"
 SOUNDS_DIR = f"{ASSETS_DIR}/sounds"
 FONTS_DIR = f"{ASSETS_DIR}/fonts"
