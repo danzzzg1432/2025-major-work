@@ -3,32 +3,34 @@ from game_constants import *
 from game_classes import *
 import sys
 
-# Initialise pygame
+# Initialise pygame and screen
 pygame.init()
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Screen set up
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption(f"{GAME_TITLE} - Main Menu")
+state_manager = StateManager(screen)
+pygame.display.set_caption(f"hi")
 
 
-# Initialise game states
-state_manager = StateManager()
-main_menu = MainMenu(screen, state_manager)
-main_game = GameMenu(screen, state_manager)
-settings_menu = SettingsMenu(screen, state_manager)
-shop_menu = ShopMenu(screen, state_manager)
-login_menu = LoginMenu(screen, state_manager)
-register_menu = RegisterMenu(screen, state_manager)
-help_menu = HelpMenu(screen, state_manager)
 
-# Register game states
-state_manager.register_state(MAIN_MENU, main_menu)
-state_manager.register_state(GAME_MENU, main_game)
-state_manager.register_state(SETTINGS_MENU, settings_menu)
-state_manager.register_state(SHOP_MENU, shop_menu)
-state_manager.register_state(LOGIN_MENU, login_menu)
-state_manager.register_state(REGISTER_MENU, register_menu)
-state_manager.register_state(HELP_MENU, help_menu)
+
+# yup they were in fact redundant.
+# main_menu = MainMenu(screen, state_manager)
+# main_game = GameMenu(screen, state_manager)
+# settings_menu = SettingsMenu(screen, state_manager)
+# shop_menu = ShopMenu(screen, state_manager)
+# login_menu = LoginMenu(screen, state_manager)
+# register_menu = RegisterMenu(screen, state_manager)
+# help_menu = HelpMenu(screen, state_manager)
+
+# # Register game states
+# state_manager.register_state(MAIN_MENU, main_menu)
+# state_manager.register_state(GAME_MENU, main_game)
+# state_manager.register_state(SETTINGS_MENU, settings_menu)
+# state_manager.register_state(SHOP_MENU, shop_menu)
+# state_manager.register_state(LOGIN_MENU, login_menu)
+# state_manager.register_state(REGISTER_MENU, register_menu)
+# state_manager.register_state(HELP_MENU, help_menu)
 
 # Other classes
 
@@ -43,7 +45,6 @@ if DEBUG_MODE:
 clock = pygame.time.Clock()
 while True:
     events = pygame.event.get() # event handling
-    
     current_screen = state_manager.get_state_object(state_manager.get_state()) # initial state is main menu for now
     if current_screen:
         current_screen.handle_events(events)

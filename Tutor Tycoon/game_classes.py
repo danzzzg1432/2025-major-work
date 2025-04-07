@@ -19,13 +19,6 @@ class Button: # global button class
     
     def is_hovered(self, pos):
         return self.rect.collidepoint(pos) 
-
-    def __init__(self, x, y , width, height, colour, border_radius=0, border_width=0, border_colour=None):
-        self.frect = pygame.FRect(x, y, width, height)
-        self.colour = colour
-        self.border_radius = border_radius
-        self.border_width = border_width
-        self.border_colour = border_colour     
         
 class Generator:
     def __init__(self, name, rate, price, level=1, amount=0):
@@ -62,18 +55,29 @@ class User:
         
 # Screens and Menus
 class StateManager: # global state manager
-    def __init__(self):
-        self.state = MAIN_MENU # set initial state to main menu (for now)
-        self.states = {} # dictionary to hold different states
+    def __init__(self, screen):
+        self.state = GAME_MENU # set initial state to main menu (for now)
+        self.states = {
+            MAIN_MENU: MainMenu(screen, self),
+            GAME_MENU: GameMenu(screen, self),
+            SETTINGS_MENU: SettingsMenu(screen, self),
+            SHOP_MENU: ShopMenu(screen, self),
+            LOGIN_MENU: LoginMenu(screen, self),
+            REGISTER_MENU: RegisterMenu(screen, self),
+            HELP_MENU: HelpMenu(screen, self),
+            } 
 
+        
     def set_state(self, new_state): # set the state of the game
         self.state = new_state
+        pygame.display.set_caption(f"{GAME_TITLE} - {new_state.replace('_', ' ').title()}") # set the window title to the current state
+
 
     def get_state(self): # get the current state of the game
         return self.state
     
-    def register_state(self, state_name, state_object): # register a new state
-        self.states[state_name] = state_object
+    # def register_state(self, state_name, state_object): # register a new state
+    #     self.states[state_name] = state_object
         
     def get_state_object(self, state_name): # get the state object of a specific state (use case: returns current state object for the screen)
         return self.states.get(state_name, None)
@@ -278,3 +282,10 @@ class HelpMenu: # Help menu class
         pygame.display.flip()
 
     
+class Testing:
+    def __init__(self):
+        self.buttons = self.create_buttons()
+        
+        
+    def create_buttons(self):
+        
