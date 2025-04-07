@@ -282,10 +282,10 @@ class HelpMenu: # Help menu class
         pygame.display.flip()
 
     
-class Testing:
-    def __init__(self):
-        self.buttons = self.create_buttons()
+# class Testing:
+#     def __init__(self):
+#         self.buttons = self.create_buttons()
         
         
-    def create_buttons(self):
+#     def create_buttons(self):
         
