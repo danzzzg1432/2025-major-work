@@ -31,6 +31,7 @@ BUTTON_WIDTH = 250
 BUTTON_HEIGHT = 60
 BUTTON_SPACING = 20
 BUTTON_BORDER_RADIUS = 15
+main_button_x = (SCREEN_WIDTH - BUTTON_WIDTH) // 2
 
 # Game settings
 STARTING_MONEY = 1000
@@ -56,6 +57,7 @@ SHOP_MENU = "shop_menu"
 LOGIN_MENU = "login_menu"
 REGISTER_MENU = "register_menu"
 HELP_MENU = "help_menu"
+TESTING = "testing"
 
 
 # Load Images

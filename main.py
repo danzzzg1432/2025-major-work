@@ -11,32 +11,8 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 state_manager = StateManager(screen)
 pygame.display.set_caption(f"hi")
 
-
-
-
-# yup they were in fact redundant.
-# main_menu = MainMenu(screen, state_manager)
-# main_game = GameMenu(screen, state_manager)
-# settings_menu = SettingsMenu(screen, state_manager)
-# shop_menu = ShopMenu(screen, state_manager)
-# login_menu = LoginMenu(screen, state_manager)
-# register_menu = RegisterMenu(screen, state_manager)
-# help_menu = HelpMenu(screen, state_manager)
-
-# # Register game states
-# state_manager.register_state(MAIN_MENU, main_menu)
-# state_manager.register_state(GAME_MENU, main_game)
-# state_manager.register_state(SETTINGS_MENU, settings_menu)
-# state_manager.register_state(SHOP_MENU, shop_menu)
-# state_manager.register_state(LOGIN_MENU, login_menu)
-# state_manager.register_state(REGISTER_MENU, register_menu)
-# state_manager.register_state(HELP_MENU, help_menu)
-
-# Other classes
-
-
 # debugging stuff
-DEBUG_MODE = False  # Set to False in release
+DEBUG_MODE = True  # Set to False in release
 
 if DEBUG_MODE:
     print(state_manager)  # print all registered states
@@ -54,16 +30,5 @@ while True:
         print("No current screen found, exiting game.")
         pygame.quit()
         sys.exit()
-
-    # # State manager / Main game loops
-    # current_state = state_manager.get_state()
-    # if current_state == MAIN_MENU:
-    #     main_menu_event_handler = main_menu.handle_events(events)
-    #     main_menu.update()
-    #     main_menu.render()
-    # elif current_state == GAME_MENU:
-    #     main_game_event_handler = main_game.handle_events(events)
-    #     main_game.update()
-    #     main_game.render()
-
+        
     clock.tick(FPS)  # Control game speed
