@@ -72,7 +72,6 @@ class StateManager: # global state manager
             TESTING: Testing(screen, user, self)
             } 
 
-        
     def set_state(self, new_state): # set the state of the game
         self.state = new_state
         pygame.display.set_caption(f"{GAME_TITLE} - {new_state.replace('_', ' ').title()}") # set the window title to the current state
@@ -322,7 +321,7 @@ class CreateFrect: # include method for adding fonts.
             
 # testing generator class with a temp menu + sort of randomly testing stuff too
 user = User(1000) 
-andyparam = Generator("Andy Param", 10, 100, 1, 1)
+depression = Generator("Depressi")
 class Testing:
     def __init__(self, screen, user, state_manager):
         self.screen = screen
