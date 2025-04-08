@@ -284,22 +284,40 @@ class HelpMenu: # Help menu class
         self.screen.fill(GRAY)
         pygame.display.flip()
 
-class CreateFrect:
-    def __init__(self, x, y, width, height, colour, image_path=None, id=None):
-        self.frect = pygame.FRect(x,y,width,height)
-        self.colour = colour
+class CreateFrect: # include method for adding fonts.
+    def __init__(self, x, y, width, height, bg_colour, display=None, font=None, font_colour=None, image_path=None, id=None):
+        self.frect = pygame.FRect(x, y, width, height)
+        self.bg_colour = bg_colour
         self.image = None
         self.id = id
+        self.font = font
+        self.font_colour = font_colour
+        self.display = display
 
-        if image_path: # if an image path is provided, load the image and scale it to the size of the rect
+        if image_path:  # Load and scale image if provided
             self.image = pygame.image.load(image_path).convert_alpha()
             self.image = pygame.transform.scale(self.image, (width, height))
-            
-    def draw(self, screen): # draw the rect on the screen
+
+    def render_text(self, display=None): # default is center
+        # render text onto surface
+        if self.font and self.font_colour:
+            display = display if display is not None else self.display
+            text_surface = self.font.render(str(display), True, self.font_colour)
+            text_rect = text_surface.get_rect(center=self.frect.center)
+            return text_surface, text_rect
+        return None, None
+
+    def draw(self, screen):
+        # draw rect and render images
         if self.image:
             screen.blit(self.image, self.frect)
         else:
-            pygame.draw.rect(screen, self.colour, self.frect)
+            pygame.draw.rect(screen, self.bg_colour, self.frect)
+
+        # Render text if applicable
+        text_surface, text_rect = self.render_text()
+        if text_surface and text_rect:
+            screen.blit(text_surface, text_rect)
             
             
 # testing generator class with a temp menu + sort of randomly testing stuff too
@@ -309,7 +327,7 @@ class Testing:
     def __init__(self, screen, user, state_manager):
         self.screen = screen
         self.state_manager = state_manager
-        self.button_font = pygame.font.Font(LOGO_FONT, MAIN_MENU_BUTTON_SIZE)
+        self.font = pygame.font.Font(LOGO_FONT, MAIN_MENU_BUTTON_SIZE)
         self.buttons = self.create_buttons()
         self.user = user
         self.screen_elements = {
@@ -350,7 +368,7 @@ class Testing:
             button.draw(self.screen)
         for element in self.screen_elements.values():
             element.draw(self.screen)
-        user_money = self.button_font.render(str(user.money), True, "Black")
+        user_money = self.font.render(str(user.money), True, "Black")
         
         money_display_rect = self.screen_elements.get("money_display").frect # TODO FOR TOMORROW: get the rect of the money display and render the money in the middle of it, and create some method or function to update the money display rect in the screen_elements dict, so that it can be used in other menus too.
         user_money_rect = user_money.get_rect(center=money_display_rect.center)
