@@ -61,5 +61,12 @@ TESTING = "testing"
 
 
 # Load Images
-main_menu_background = pygame.image.load(f"{IMAGES_DIR}/dr_du_logo.png") # temporary meme background =)
-idle_tutor_tycoon_logo = pygame.image.load(f"{IMAGES_DIR}/itt_logo.png")
+def load_image(image_path, scale=None):
+    image = pygame.image.load(image_path)
+    if scale:
+        image = pygame.transform.scale(image, scale)
+    return image
+
+williamdu = load_image(f"{IMAGES_DIR}/williamdu.png", (300, 300))
+main_menu_background = load_image(f"{IMAGES_DIR}/dr_du_logo.png")
+idle_tutor_tycoon_logo = load_image(f"{IMAGES_DIR}/itt_logo.png")

@@ -26,6 +26,7 @@ while True:
         current_screen.handle_events(events)
         current_screen.update()
         current_screen.render()
+    # if user input not detected for more than 2 minutes, drop fps down to 15
     else: # if no current screen is found, exit the game, easier debugging
         print("No current screen found, exiting game.")
         pygame.quit()

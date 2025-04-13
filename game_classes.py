@@ -1,6 +1,10 @@
-import pygame
-from game_constants import *
 import sys
+import math
+
+import pygame
+
+from game_constants import *
+
 # Button Class
 class Button: # global button class
     def __init__(self, x, y, width, height, text, background_colour, font, text_colour, callback=None):
@@ -52,12 +56,17 @@ class User:
         generator.increase_amount()
         
     def get_money(self):
-        return self.money
+        return round(self.money)
     
     def set_money(self, new_money):
         self.money = new_money
+        
+    def earn_money(self, generator):
+        if generator.name in self.generators:
+            self.money += generator.generate_money()
     
 # Screens and Menus
+user = User(1000) # global user object
 class StateManager: # global state manager
     def __init__(self, screen):
         self.state = TESTING # set initial state to main menu (for now)
@@ -137,6 +146,7 @@ class MainMenu: # Main menu class
         pygame.display.flip()
         
     def load_game(self):
+        # self.state_manager.set_state(GAME_MENU) -> Placeholder for load game functionality
         pass
     
     def settings(self):
@@ -166,7 +176,7 @@ class GameMenu: # Game menu class, mostly placeholder for now
             Button(main_button_x, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "test test", "Red", self.button_font, BLACK,callback=None),
             Button(main_button_x, 440, BUTTON_WIDTH, BUTTON_HEIGHT, "test test", GRAY, self.button_font, BLACK,callback=None),
             Button(main_button_x, 520, BUTTON_WIDTH, BUTTON_HEIGHT, "test", GRAY, self.button_font, BLACK,callback=None),
-            Button(main_button_x, 600, BUTTON_WIDTH, BUTTON_HEIGHT, "go back", GRAY, self.button_font, BLACK,callback=lambda: self.state_manager.set_state(MAIN_MENU)) # lambda creates a temp anonymous function
+            Button(main_button_x, 600, BUTTON_WIDTH, BUTTON_HEIGHT, "go back", GRAY, self.button_font, BLACK,callback=lambda: self.state_manager.set_state(MAIN_MENU))
         ]
 
     def handle_events(self, events):
@@ -282,29 +292,51 @@ class HelpMenu: # Help menu class
     def render(self):
         self.screen.fill(GRAY)
         pygame.display.flip()
-
-class CreateFrect: # include method for adding fonts.
-    def __init__(self, x, y, width, height, bg_colour, display=None, font=None, font_colour=None, image_path=None, id=None):
+class CreateFrect:
+    def __init__(self, x, y, width, height, bg_colour, id=None, display=None, font=None, font_colour=None, image_path=None, display_callback=None):
         self.frect = pygame.FRect(x, y, width, height)
         self.bg_colour = bg_colour
         self.image = None
         self.id = id
         self.font = font
         self.font_colour = font_colour
-        self.display = display
+        self.display = display # thing we display inside the frect (idk why but i call it text)
+        self.display_callback = display_callback # for displays requiring dynamic updates
 
         if image_path:  # Load and scale image if provided
             self.image = pygame.image.load(image_path).convert_alpha()
             self.image = pygame.transform.scale(self.image, (width, height))
 
-    def render_text(self, display=None): # default is center
-        # render text onto surface
+    def render_text(self, position="center", display=None): # default is center
+        position_bank = {
+        "center": "center",
+        "topleft": "topleft",
+        "topright": "topright",
+        "bottomleft": "bottomleft",
+        "bottomright": "bottomright",
+        "midleft": "midleft",
+        "midright": "midright",
+        "midtop": "midtop",
+        "midbottom": "midbottom"
+        }
+            # render text onto surface
         if self.font and self.font_colour:
-            display = display if display is not None else self.display
+            if self.display_callback: # if true, it is a dynamically updating block
+                display = self.display_callback()
+            else:
+                display = display if display is not None else self.display # if display is None, use the default display value
             text_surface = self.font.render(str(display), True, self.font_colour)
-            text_rect = text_surface.get_rect(center=self.frect.center)
-            return text_surface, text_rect
-        return None, None
+            text_surface_rect = text_surface.get_rect()
+            
+            if position in position_bank:
+                setattr(text_surface_rect, position_bank[position], getattr(self.frect, position_bank[position])) # set the position of the text rect to the frect position
+            else:
+                text_surface_rect.center = self.frect.center
+        
+            return text_surface, text_surface_rect
+        return None, None # returns a tuple
+
+
 
     def draw(self, screen):
         # draw rect and render images
@@ -313,29 +345,35 @@ class CreateFrect: # include method for adding fonts.
         else:
             pygame.draw.rect(screen, self.bg_colour, self.frect)
 
-        # Render text if applicable
+        # render text if applicable
         text_surface, text_rect = self.render_text()
         if text_surface and text_rect:
             screen.blit(text_surface, text_rect)
+
+class SaveStates:
+    # research how to save and load game states
+    
+    pass
+   
             
-            
+Wallace = Generator("Wallace", 100, 1, 1, 1)
+user.add_generator(Wallace)
+
 # testing generator class with a temp menu + sort of randomly testing stuff too
-user = User(1000) 
-depression = Generator("Depressi")
 class Testing:
     def __init__(self, screen, user, state_manager):
         self.screen = screen
         self.state_manager = state_manager
         self.font = pygame.font.Font(LOGO_FONT, MAIN_MENU_BUTTON_SIZE)
-        self.buttons = self.create_buttons()
         self.user = user
+        self.buttons = self.create_buttons()
         self.screen_elements = {
-            "money_display": CreateFrect(200, 200, 200, 200, "Blue", id="money_display",)
+            "money_display": CreateFrect(60, 60, 60, 60, "Pink", id="money_display", font=self.font, font_colour="Black", display_callback=lambda: f"test: {self.user.get_money()}")
         }
     
     def create_buttons(self):
         return [
-            Button(500, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "GENERATE MONEY!!!", GRAY, self.button_font, BLACK, callback=None),
+            Button(500, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "Wallace Generator", GRAY, self.font, BLACK, callback=lambda: self.user.earn_money(Wallace)),
             ]
 
     def handle_events(self, events):
@@ -367,11 +405,7 @@ class Testing:
             button.draw(self.screen)
         for element in self.screen_elements.values():
             element.draw(self.screen)
-        user_money = self.font.render(str(user.money), True, "Black")
-        
-        money_display_rect = self.screen_elements.get("money_display").frect # TODO FOR TOMORROW: get the rect of the money display and render the money in the middle of it, and create some method or function to update the money display rect in the screen_elements dict, so that it can be used in other menus too.
-        user_money_rect = user_money.get_rect(center=money_display_rect.center)
-        self.screen.blit(user_money, user_money_rect)  # render the money display centered in the rect
+        self.screen.blit(williamdu, (600, 600))
         
         
         pygame.display.flip()
