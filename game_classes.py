@@ -30,40 +30,99 @@ class Button: # global button class
             self.callback()
         
 class Generator:
-    def __init__(self, name, rate, price, level=1, amount=0):
-        self.rate = rate
+    def __init__(self, id, name, base_rate, base_price, level=1, amount=0):
+        self.id = id # unique identifier for the generator - constant generators are in game_constants.py
+        self.base_rate = base_rate
         self.name = name
-        self.price = price
-        self.level = level
-        self.amount = amount
+        self.base_price = base_price # base price of the generator
+        self.level = level # multiplier level
+        self.amount = amount # how many you own
         
-    def increase_amount(self):
-        self.amount += 1
-        
-    def generate_money(self):
-        return (self.rate * self.amount * self.level)/60 # money per second as fps is 60, so divide by 60 to get per second as it runs 60 times a second
-
+    @property
+    def rate(self): # rate of the generator, how much money it generates per second
+        return self.base_rate * self.amount * self.level
     
+    @property
+    def next_price(self): # price of the next generator, increases by 15% each time you buy one. This one is the one shown to the user - the buy() method has this already inline
+        return int(self.base_price * (1.15 ** self.amount)) # price of the next generator, increases by 15% each time you buy one
     
+    def buy(self, user, quantity=1): # buy a generator, quantity is the amount of generators to buy
+        total_cost = sum(
+            int(self.base_price * (1.15 ** i)) 
+            for i in range(self.amount, self.amount + quantity)) # total cost of the generators
+        if user.money >= total_cost:
+            user.money -= total_cost
+            self.amount += quantity # increase the amount of generators owned
+    
+    def to_dict(self): # returns a dictionary of the generator object
+        return { 
+                "id": self.id,
+                "level": self.level,
+                "amount": self.amount,
+                }
+    
+    @classmethod
+    def from_dict(cls, data): # creates a generator object from a dictionary, essentially encapsulates the generator object into a dictionary for saving/loading purposes
+        prototype = GENERATOR_PROTOTYPES[data["id"]] # get the prototype from the generator prototypes dictionary
+        return cls(
+            id = data["id"],
+            base_rate = prototype["base_rate"],
+            base_price = prototype["base_price"],
+            level = data["level"],
+            amount = data["amount"]
+        )
 class User:
     def __init__(self, money=0):
         self.generators = {}
         self.money = money
-    
-    def add_generator(self, generator): # perhaps later include a feature to multiple-buy generators -> add button in the shop menu which switches from 1x, 10x, 100x, then buy that amount probably by passing through the amount in this class
-        if generator.name not in self.generators: # check if generator already exists
-            self.generators[generator.name] = generator
-        generator.increase_amount()
         
-    def get_money(self):
-        return round(self.money)
-    
-    def set_money(self, new_money):
-        self.money = new_money
+    def ensure_generator(self, generator_id): # check if the generator exists in the user object, if not, create it
+        if generator_id not in self.generators:
+            prototype = GENERATOR_PROTOTYPES[generator_id] 
+            self.generators[generator_id] = Generator( # append generator(s) to the user 
+                id=generator_id,
+                name=prototype["name"],
+                base_rate=prototype["base_rate"],
+                base_price=prototype["base_price"]
+            )
+            
+    def buy_generator(self, generator_id, quantity=1): # buy a generator, quantity is the amount of generators to buy
+        self.ensure_generator(generator_id) # ensure the generator exists in the user object
+        self.generators[generator_id].buy(self, quantity) # buy the generator(s)
         
-    def earn_money(self, generator):
-        if generator.name in self.generators:
-            self.money += generator.generate_money()
+    def update(self, dt_seconds): # where dt=delta time, the time since the last frame in seconds
+        for generator in self.generators.values():
+            generator.amount += generator.rate * dt_seconds
+    
+    def to_dict(self): # returns a dictionary of the user object
+        return{ 
+               "money": self.money,
+               "generators": {generator.to_dict() for generator in self.generators.values()}
+               }
+    
+    @classmethod
+    def from_dict(cls, data): # creates a user object from a dictionary, essentially encapsulates the user object into a dictionary for saving/loading purposes
+        user = cls(data["money"])
+        for generator_data in data["generators"]:
+            generator = Generator.from_dict(generator_data)
+            user.generators[generator.id] = generator # add the generator to the user object
+        return user # 
+        
+    # old code
+    # def add_generator(self, generator): # perhaps later include a feature to multiple-buy generators -> add button in the shop menu which switches from 1x, 10x, 100x, then buy that amount probably by passing through the amount in this class
+    #     if generator.name not in self.generators: # check if generator already exists
+    #         self.generators[generator.name] = generator
+    #     generator.increase_amount()
+     
+    # def get_money(self):
+    #     return round(self.money)
+    
+    # def set_money(self, new_money):
+    #     self.money = new_money
+        
+    # def earn_money(self, generator):
+    #     if generator.name in self.generators:
+    #         self.money += generator.generate_money()
     
 # Screens and Menus
 user = User(1000) # global user object
@@ -368,12 +427,11 @@ class Testing:
         self.user = user
         self.buttons = self.create_buttons()
         self.screen_elements = {
-            "money_display": CreateFrect(60, 60, 60, 60, "Pink", id="money_display", font=self.font, font_colour="Black", display_callback=lambda: f"test: {self.user.get_money()}")
+            "money_display": CreateFrect(60, 60, 60, 60, "Pink", id="money_display", font=self.font, font_colour="Black", display_callback=lambda: f"ATAR POINTS: {self.user.money}")
         }
-    
     def create_buttons(self):
         return [
-            Button(500, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "Wallace Generator", GRAY, self.font, BLACK, callback=lambda: self.user.earn_money(Wallace)),
+            Button(500, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "Wallace Generator", GRAY, self.font, BLACK, callback=lambda: self.user.earn_money(Wallace)), # have to define generator in game_constants.py
             ]
 
     def handle_events(self, events):
@@ -409,3 +467,5 @@ class Testing:
         
         
         pygame.display.flip()
+        
+        

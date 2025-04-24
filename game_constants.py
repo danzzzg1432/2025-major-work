@@ -70,3 +70,7 @@ def load_image(image_path, scale=None):
 williamdu = load_image(f"{IMAGES_DIR}/williamdu.png", (300, 300))
 main_menu_background = load_image(f"{IMAGES_DIR}/dr_du_logo.png")
 idle_tutor_tycoon_logo = load_image(f"{IMAGES_DIR}/itt_logo.png")
+
+GENERATOR_PROTOTYPES = {
+    ""
+}
