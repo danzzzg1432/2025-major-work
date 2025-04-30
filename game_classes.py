@@ -37,7 +37,13 @@ class Generator:
         self.base_price = base_price # base price of the generator
         self.level = level # multiplier level
         self.amount = amount # how many you own
-        
+    
+    def manual_generate(self, user, quantity=1): # manually generated money
+        amount = self.base_rate * self.level * quantity
+        user.money += amount
+        return amount # returns the amount of money generated, ill see if I need this or not
+    
+    
     @property
     def rate(self): # rate of the generator, how much money it generates per second
         return self.base_rate * self.amount * self.level
@@ -71,10 +77,34 @@ class Generator:
             level = data["level"],
             amount = data["amount"]
         )
+
+class Manager: # global manager class
+    def __init__(self, id, name, cost):
+        self.id = id
+        self.name = name
+        self.cost = cost
+
+    def buy(self, user):
+        # attempts to hire this manager; deduct cost and register on user
+        if user.money >= self.cost:
+            user.money -= self.cost
+            user.managers[self.id] = self
+            return True
+        return False
+
+    def to_dict(self): # returns a dictionary of the manager object
+        return { "id": self.id }
+
+    @classmethod
+    def from_dict(cls, data): # creates a manager object from a dictionary, essentially encapsulates the manager object into a dictionary for saving/loading purposes
+        proto = MANAGER_PROTOTYPES[data["id"]]
+        return cls(id=data["id"], name=proto["name"], cost=proto["cost"])
+
 class User:
     def __init__(self, money=0):
         self.generators = {}
         self.money = money
+        self.managers = {} 
         
     def ensure_generator(self, generator_id): # check if the generator exists in the user object, if not, create it
         if generator_id not in self.generators:
@@ -89,10 +119,20 @@ class User:
     def buy_generator(self, generator_id, quantity=1): # buy a generator, quantity is the amount of generators to buy
         self.ensure_generator(generator_id) # ensure the generator exists in the user object
         self.generators[generator_id].buy(self, quantity) # buy the generator(s)
-        
-    def update(self, dt_seconds): # where dt=delta time, the time since the last frame in seconds
-        for generator in self.generators.values():
-            generator.amount += generator.rate * dt_seconds
+    
+    def ensure_manager(self, manager_id):
+        if manager_id not in self.managers:
+            proto = MANAGER_PROTOTYPES[manager_id]
+            self.managers[manager_id] = Manager(manager_id, proto["name"], proto["cost"])
+
+    def buy_manager(self, manager_id):
+        self.ensure_manager(manager_id)
+        return self.managers[manager_id].buy(self)
+
+    def update(self, dt_seconds):
+        for gen in self.generators.values():
+            if gen.id in self.managers:
+                self.money += gen.rate * dt_seconds
     
     def to_dict(self): # returns a dictionary of the user object
         return{ 
@@ -125,7 +165,7 @@ class User:
     #         self.money += generator.generate_money()
     
 # Screens and Menus
-user = User(1000) # global user object
+user = User(1000000) # global user object
 class StateManager: # global state manager
     def __init__(self, screen):
         self.state = TESTING # set initial state to main menu (for now)
@@ -266,6 +306,164 @@ class GameMenu: # Game menu class, mostly placeholder for now
         for button in self.buttons:
             button.draw(self.screen)
         pygame.display.flip()
+
+class CreateFrect:
+    def __init__(self, x, y, width, height, bg_colour, id=None, display=None, font=None, font_colour=None, image_path=None, display_callback=None):
+        self.frect = pygame.FRect(x, y, width, height)
+        self.bg_colour = bg_colour
+        self.image = None
+        self.id = id
+        self.font = font
+        self.font_colour = font_colour
+        self.display = display # thing we display inside the frect (idk why but i call it text)
+        self.display_callback = display_callback # for displays requiring dynamic updates
+
+        if image_path:  # Load and scale image if provided
+            self.image = pygame.image.load(image_path).convert_alpha()
+            self.image = pygame.transform.scale(self.image, (width, height))
+
+    def render_text(self, position="center", display=None): # default is center
+        position_bank = {
+        "center": "center",
+        "topleft": "topleft",
+        "topright": "topright",
+        "bottomleft": "bottomleft",
+        "bottomright": "bottomright",
+        "midleft": "midleft",
+        "midright": "midright",
+        "midtop": "midtop",
+        "midbottom": "midbottom"
+        }
+            # render text onto surface
+        if self.font and self.font_colour:
+            if self.display_callback: # if true, it is a dynamically updating block
+                display = self.display_callback()
+            else:
+                display = display if display is not None else self.display # if display is None, use the default display value
+            text_surface = self.font.render(str(display), True, self.font_colour)
+            text_surface_rect = text_surface.get_rect()
+            
+            if position in position_bank:
+                setattr(text_surface_rect, position_bank[position], getattr(self.frect, position_bank[position])) # set the position of the text rect to the frect position
+            else:
+                text_surface_rect.center = self.frect.center
+        
+            return text_surface, text_surface_rect
+        return None, None # returns a tuple
+
+
+
+    def draw(self, screen):
+        # draw rect and render images
+        if self.image:
+            screen.blit(self.image, self.frect)
+        else:
+            pygame.draw.rect(screen, self.bg_colour, self.frect)
+
+        # render text if applicable
+        text_surface, text_rect = self.render_text()
+        if text_surface and text_rect:
+            screen.blit(text_surface, text_rect)
+
+        
+class Testing:
+    def __init__(self, screen, user, state_manager):
+        self.screen = screen
+        self.state_manager = state_manager
+        self.font = pygame.font.Font(LOGO_FONT, MAIN_MENU_BUTTON_SIZE)
+        self.user = user
+        self.buttons = self.create_buttons()
+        self.screen_elements = {
+            "money_display": CreateFrect(300, 60, 60, 60, "Pink", id="money_display", font=self.font, font_colour="Black", display_callback=lambda: f"ATAR POINTS: {round(self.user.money)}")
+        }
+        self.last_time = pygame.time.get_ticks() / 1000  # track for dt
+
+    def create_buttons(self):
+        buttons = []
+
+        # dynamically create 3 columns: Buy Gen, Manual Gen, Hire Manager
+        padding_x = 200
+        padding_y = 200
+        col_width = 220
+        for idx, (generator_id, prototype) in enumerate(GENERATOR_PROTOTYPES.items()): # loop through all the generators
+            x = padding_x + (idx * col_width)
+            # 1) Buy Generator
+            buttons.append(Button(
+            x, padding_y + 0*60, BUTTON_WIDTH, BUTTON_HEIGHT,
+            f"Buy {prototype['name']}",
+            GRAY, self.font, BLACK,
+            callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id),
+                                     self.user.buy_generator(generator_id) )
+            ))
+            # 2) Manual Generate
+            buttons.append(Button(
+            x, padding_y + 1*60, BUTTON_WIDTH, BUTTON_HEIGHT,
+            f"Gen {prototype['name']}",
+            YELLOW, self.font, BLACK,
+            callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id),
+                                     self.user.generators[generator_id].manual_generate(self.user) )
+            ))
+            # 3) Hire Manager
+            mproto = MANAGER_PROTOTYPES[generator_id]
+            buttons.append(Button(
+            x, padding_y + 2*60, BUTTON_WIDTH, BUTTON_HEIGHT,
+            f"Hire {mproto['name']}",
+            BLUE, self.font, BLACK,
+            callback=lambda generator_id=generator_id: ( self.user.buy_manager(generator_id) )
+            ))
+        return buttons
+       
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                for button in self.buttons:
+                    if button.is_hovered(mouse_pos):
+                        button.click()
+        return True
+       
+       
+       
+    def update(self):
+        # 1) Auto‐production
+        now = pygame.time.get_ticks() / 1000
+        dt  = now - self.last_time
+        self.user.update(dt)
+        self.last_time = now
+
+        # 2) Button hover coloring
+        mouse_pos = pygame.mouse.get_pos()
+        for btn in self.buttons:
+            btn.colour = DARK_GRAY if btn.is_hovered(mouse_pos) else btn.initial_colour
+       
+       
+    def render(self):
+        self.screen.fill(WHITE)  # Set background colour
+        self.screen.blit(main_menu_background) # load background image
+        
+        for button in self.buttons:
+            button.draw(self.screen)
+        for element in self.screen_elements.values():
+            element.draw(self.screen)
+        self.screen.blit(williamdu, (600, 600))
+        
+        
+        pygame.display.flip()
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+       
+        
 class ShopMenu: # Shop menu class
     def __init__(self, screen, state_manager):
         self.screen = screen
@@ -351,121 +549,3 @@ class HelpMenu: # Help menu class
     def render(self):
         self.screen.fill(GRAY)
         pygame.display.flip()
-class CreateFrect:
-    def __init__(self, x, y, width, height, bg_colour, id=None, display=None, font=None, font_colour=None, image_path=None, display_callback=None):
-        self.frect = pygame.FRect(x, y, width, height)
-        self.bg_colour = bg_colour
-        self.image = None
-        self.id = id
-        self.font = font
-        self.font_colour = font_colour
-        self.display = display # thing we display inside the frect (idk why but i call it text)
-        self.display_callback = display_callback # for displays requiring dynamic updates
-
-        if image_path:  # Load and scale image if provided
-            self.image = pygame.image.load(image_path).convert_alpha()
-            self.image = pygame.transform.scale(self.image, (width, height))
-
-    def render_text(self, position="center", display=None): # default is center
-        position_bank = {
-        "center": "center",
-        "topleft": "topleft",
-        "topright": "topright",
-        "bottomleft": "bottomleft",
-        "bottomright": "bottomright",
-        "midleft": "midleft",
-        "midright": "midright",
-        "midtop": "midtop",
-        "midbottom": "midbottom"
-        }
-            # render text onto surface
-        if self.font and self.font_colour:
-            if self.display_callback: # if true, it is a dynamically updating block
-                display = self.display_callback()
-            else:
-                display = display if display is not None else self.display # if display is None, use the default display value
-            text_surface = self.font.render(str(display), True, self.font_colour)
-            text_surface_rect = text_surface.get_rect()
-            
-            if position in position_bank:
-                setattr(text_surface_rect, position_bank[position], getattr(self.frect, position_bank[position])) # set the position of the text rect to the frect position
-            else:
-                text_surface_rect.center = self.frect.center
-        
-            return text_surface, text_surface_rect
-        return None, None # returns a tuple
-
-
-
-    def draw(self, screen):
-        # draw rect and render images
-        if self.image:
-            screen.blit(self.image, self.frect)
-        else:
-            pygame.draw.rect(screen, self.bg_colour, self.frect)
-
-        # render text if applicable
-        text_surface, text_rect = self.render_text()
-        if text_surface and text_rect:
-            screen.blit(text_surface, text_rect)
-
-class SaveStates:
-    # research how to save and load game states
-    
-    pass
-   
-            
-Wallace = Generator("Wallace", 100, 1, 1, 1)
-user.add_generator(Wallace)
-
-# testing generator class with a temp menu + sort of randomly testing stuff too
-class Testing:
-    def __init__(self, screen, user, state_manager):
-        self.screen = screen
-        self.state_manager = state_manager
-        self.font = pygame.font.Font(LOGO_FONT, MAIN_MENU_BUTTON_SIZE)
-        self.user = user
-        self.buttons = self.create_buttons()
-        self.screen_elements = {
-            "money_display": CreateFrect(60, 60, 60, 60, "Pink", id="money_display", font=self.font, font_colour="Black", display_callback=lambda: f"ATAR POINTS: {self.user.money}")
-        }
-    def create_buttons(self):
-        return [
-            Button(500, 360, BUTTON_WIDTH, BUTTON_HEIGHT, "Wallace Generator", GRAY, self.font, BLACK, callback=lambda: self.user.earn_money(Wallace)), # have to define generator in game_constants.py
-            ]
-
-    def handle_events(self, events):
-        for event in events:
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                for button in self.buttons:
-                    if button.is_hovered(mouse_pos):
-                        button.click()
-        return True
-
-        
-    def update(self):
-        mouse_pos = pygame.mouse.get_pos()
-        for button in self.buttons:
-            if button.is_hovered(mouse_pos):
-                button.colour = DARK_GRAY
-            else:
-                button.colour = button.initial_colour
-
-    def render(self):
-        self.screen.fill(WHITE)  # Set background colour
-        self.screen.blit(main_menu_background) # load background image
-        
-        for button in self.buttons:
-            button.draw(self.screen)
-        for element in self.screen_elements.values():
-            element.draw(self.screen)
-        self.screen.blit(williamdu, (600, 600))
-        
-        
-        pygame.display.flip()
-        
-        

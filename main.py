@@ -9,10 +9,10 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 # Screen set up
 state_manager = StateManager(screen)
-pygame.display.set_caption(f"{GAME_TITLE} - {state_manager.get_state()}")
+pygame.display.set_caption(f"hi")
 
 # debugging stuff
-DEBUG_MODE = True  # Set to False in release
+DEBUG_MODE = False  # Set to False in release
 
 if DEBUG_MODE:
     print(state_manager)  # print all registered states

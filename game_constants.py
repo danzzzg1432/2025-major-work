@@ -71,6 +71,18 @@ williamdu = load_image(f"{IMAGES_DIR}/williamdu.png", (300, 300))
 main_menu_background = load_image(f"{IMAGES_DIR}/dr_du_logo.png")
 idle_tutor_tycoon_logo = load_image(f"{IMAGES_DIR}/itt_logo.png")
 
+# Generator prototypes
 GENERATOR_PROTOTYPES = {
-    ""
+    # id: { name, base_rate (points/sec), base_price (initial cost) }
+    "lemonade":   { "name": "Lemonade Stand", "base_rate": 1,   "base_price": 10    },
+    "tutor":      { "name": "Tutor",          "base_rate": 5,   "base_price": 100   },
+    "professor":  { "name": "Professor",      "base_rate": 500,  "base_price": 1000  },
+}
+
+# Manager prototypes
+MANAGER_PROTOTYPES = {
+    # same keys as GENERATOR_PROTOTYPES
+    "lemonade":  { "name": "Lemonade Manager",  "cost":  100   },
+    "tutor":     { "name": "Tutor Manager",     "cost":  1000  },
+    "professor": { "name": "Professor Manager", "cost": 10000  },
 }
