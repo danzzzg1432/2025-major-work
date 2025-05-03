@@ -1,9 +1,27 @@
 import sys
-import math
-
+import os
 import pygame
-
+import json
 from game_constants import *
+
+
+class SaveStates:
+    @staticmethod
+    def get_path():
+        return os.path.join(SAVE_DIR)
+
+    @staticmethod
+    def save_user(user):
+        path = SaveStates.get_path()
+        with open(path, "w") as f:
+            json.dump(user.to_dict(), f, indent=4) 
+
+    @staticmethod
+    def load_user():
+        path = SaveStates.get_path()
+        with open(path) as f:
+            data = json.load(f)
+        return User.from_dict(data)
 
 # Button Class
 class Button: # global button class
@@ -50,11 +68,11 @@ class Generator:
     
     @property
     def next_price(self): # price of the next generator, increases by 15% each time you buy one. This one is the one shown to the user - the buy() method has this already inline
-        return int(self.base_price * (1.15 ** self.amount)) # price of the next generator, increases by 15% each time you buy one
+        return int(self.base_price * (1.07 ** self.amount)) # price of the next generator, increases by 15% each time you buy one
     
     def buy(self, user, quantity=1): # buy a generator, quantity is the amount of generators to buy
         total_cost = sum(
-            int(self.base_price * (1.15 ** i)) 
+            int(self.base_price * (1.07 ** i)) 
             for i in range(self.amount, self.amount + quantity)) # total cost of the generators
         if user.money >= total_cost:
             user.money -= total_cost
@@ -69,32 +87,36 @@ class Generator:
     
     @classmethod
     def from_dict(cls, data): # creates a generator object from a dictionary, essentially encapsulates the generator object into a dictionary for saving/loading purposes
-        prototype = GENERATOR_PROTOTYPES[data["id"]] # get the prototype from the generator prototypes dictionary
+        proto = GENERATOR_PROTOTYPES[data["id"]]
         return cls(
-            id = data["id"],
-            base_rate = prototype["base_rate"],
-            base_price = prototype["base_price"],
-            level = data["level"],
-            amount = data["amount"]
+            id=data["id"],
+            name=proto["name"],
+            base_rate=proto["base_rate"],
+            base_price=proto["base_price"],
+            level=data["level"],
+            amount=data["amount"]
         )
 
 class Manager: # global manager class
-    def __init__(self, id, name, cost):
+    def __init__(self, id, name, cost, owned):
         self.id = id
         self.name = name
         self.cost = cost
-
+        
     def buy(self, user):
         # attempts to hire this manager; deduct cost and register on user
-        if user.money >= self.cost:
-            user.money -= self.cost
-            user.managers[self.id] = self
-            return True
+        if self.id in user.managers:
+            return False
+        elif user.money >= self.cost:
+                user.money -= self.cost
+                user.managers[self.id] = self
+                return True
         return False
 
     def to_dict(self): # returns a dictionary of the manager object
         return { "id": self.id }
-
+    
+    
     @classmethod
     def from_dict(cls, data): # creates a manager object from a dictionary, essentially encapsulates the manager object into a dictionary for saving/loading purposes
         proto = MANAGER_PROTOTYPES[data["id"]]
@@ -106,6 +128,11 @@ class User:
         self.money = money
         self.managers = {} 
         
+        
+    def buy_generator(self, generator_id, quantity=1): # buy a generator, quantity is the amount of generators to buy
+        self.ensure_generator(generator_id) # ensure the generator exists in the user object
+        self.generators[generator_id].buy(self, quantity) # buy the generator(s)
+        
     def ensure_generator(self, generator_id): # check if the generator exists in the user object, if not, create it
         if generator_id not in self.generators:
             prototype = GENERATOR_PROTOTYPES[generator_id] 
@@ -115,29 +142,26 @@ class User:
                 base_rate=prototype["base_rate"],
                 base_price=prototype["base_price"]
             )
-            
-    def buy_generator(self, generator_id, quantity=1): # buy a generator, quantity is the amount of generators to buy
-        self.ensure_generator(generator_id) # ensure the generator exists in the user object
-        self.generators[generator_id].buy(self, quantity) # buy the generator(s)
+        
+    def buy_manager(self, manager_id): # buy a manager
+        self.ensure_manager(manager_id)
+        return self.managers[manager_id].buy(self)
     
-    def ensure_manager(self, manager_id):
+    def ensure_manager(self, manager_id): # check if the manager exists in the user object, if not, create it
         if manager_id not in self.managers:
             proto = MANAGER_PROTOTYPES[manager_id]
             self.managers[manager_id] = Manager(manager_id, proto["name"], proto["cost"])
 
-    def buy_manager(self, manager_id):
-        self.ensure_manager(manager_id)
-        return self.managers[manager_id].buy(self)
-
-    def update(self, dt_seconds):
+    def update(self, dt_seconds): # update the user object, called every frame
         for gen in self.generators.values():
             if gen.id in self.managers:
                 self.money += gen.rate * dt_seconds
     
-    def to_dict(self): # returns a dictionary of the user object
+    def to_dict(self): # returns a dictionary of all the users data
         return{ 
                "money": self.money,
-               "generators": {generator.to_dict() for generator in self.generators.values()}
+               "generators": {generator.to_dict() for generator in self.generators.values()},
+               "managers": {manager.to_dict() for manager in self.managers.values()},
                }
     
     @classmethod
@@ -146,7 +170,11 @@ class User:
         for generator_data in data["generators"]:
             generator = Generator.from_dict(generator_data)
             user.generators[generator.id] = generator # add the generator to the user object
-        return user # 
+        for manager_data in data["managers"]:
+            manager = Manager.from_dict(manager_data)
+            user.managers[manager.id] = manager
+        
+        return user #
         
     # old code
     # def add_generator(self, generator): # perhaps later include a feature to multiple-buy generators -> add button in the shop menu which switches from 1x, 10x, 100x, then buy that amount probably by passing through the amount in this class
@@ -165,18 +193,18 @@ class User:
     #         self.money += generator.generate_money()
     
 # Screens and Menus
-user = User(1000000) # global user object
+user = User(1000000) # test user lol
 class StateManager: # global state manager
     def __init__(self, screen):
         self.state = TESTING # set initial state to main menu (for now)
         self.states = {
             MAIN_MENU: MainMenu(screen, self),
             GAME_MENU: GameMenu(screen, self),
-            SETTINGS_MENU: SettingsMenu(screen, self),
-            SHOP_MENU: ShopMenu(screen, self),
-            LOGIN_MENU: LoginMenu(screen, self),
-            REGISTER_MENU: RegisterMenu(screen, self),
-            HELP_MENU: HelpMenu(screen, self),
+            # SETTINGS_MENU: SettingsMenu(screen, self),
+            # SHOP_MENU: ShopMenu(screen, self),
+            # LOGIN_MENU: LoginMenu(screen, self),
+            # REGISTER_MENU: RegisterMenu(screen, self),
+            # HELP_MENU: HelpMenu(screen, self),
             TESTING: Testing(screen, user, self)
             } 
 
@@ -193,7 +221,8 @@ class StateManager: # global state manager
     
     def __str__(self): # debugging line to print all states and their types
         state_names = {key: type(value).__name__ for key, value in self.states.items()}
-        return f"Current States: {self.state}, States: {state_names}" # debugging line
+        print(f"Current States: {self.state}, States: {state_names}") if DEBUG_MODE else None # debugging line 
+        return ""
 class MainMenu: # Main menu class
     def __init__(self, screen, state_manager):
         self.screen = screen
@@ -315,7 +344,7 @@ class CreateFrect:
         self.id = id
         self.font = font
         self.font_colour = font_colour
-        self.display = display # thing we display inside the frect (idk why but i call it text)
+        self.display = display # thing we display inside the frect 
         self.display_callback = display_callback # for displays requiring dynamic updates
 
         if image_path:  # Load and scale image if provided
@@ -392,24 +421,14 @@ class Testing:
             x, padding_y + 0*60, BUTTON_WIDTH, BUTTON_HEIGHT,
             f"Buy {prototype['name']}",
             GRAY, self.font, BLACK,
-            callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id),
-                                     self.user.buy_generator(generator_id) )
+            callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id), self.user.buy_generator(generator_id) )
             ))
             # 2) Manual Generate
-            buttons.append(Button(
-            x, padding_y + 1*60, BUTTON_WIDTH, BUTTON_HEIGHT,
-            f"Gen {prototype['name']}",
-            YELLOW, self.font, BLACK,
-            callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id),
-                                     self.user.generators[generator_id].manual_generate(self.user) )
+            buttons.append(Button(x, padding_y + 1*60, BUTTON_WIDTH, BUTTON_HEIGHT, f"Gen {prototype['name']}", YELLOW, self.font, BLACK, callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id), self.user.generators[generator_id].manual_generate(self.user) )
             ))
             # 3) Hire Manager
             mproto = MANAGER_PROTOTYPES[generator_id]
-            buttons.append(Button(
-            x, padding_y + 2*60, BUTTON_WIDTH, BUTTON_HEIGHT,
-            f"Hire {mproto['name']}",
-            BLUE, self.font, BLACK,
-            callback=lambda generator_id=generator_id: ( self.user.buy_manager(generator_id) )
+            buttons.append(Button( x, padding_y + 2*60, BUTTON_WIDTH, BUTTON_HEIGHT, f"Hire {mproto['name']}", BLUE, self.font, BLACK, callback=lambda generator_id=generator_id: ( self.user.buy_manager(generator_id) )
             ))
         return buttons
        
@@ -454,9 +473,7 @@ class Testing:
         pygame.display.flip()
        
        
-       
-       
-       
+
        
        
        
@@ -464,88 +481,88 @@ class Testing:
        
        
         
-class ShopMenu: # Shop menu class
-    def __init__(self, screen, state_manager):
-        self.screen = screen
-        self.state_manager = state_manager
+# class ShopMenu: # Shop menu class
+#     def __init__(self, screen, state_manager):
+#         self.screen = screen
+#         self.state_manager = state_manager
 
-    def handle_events(self, events):
-        for event in events:
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+#     def handle_events(self, events):
+#         for event in events:
+#             if event.type == pygame.QUIT:
+#                 pygame.quit()
+#                 sys.exit()
 
-    def update(self):
-        pass
+#     def update(self):
+#         pass
 
-    def render(self):
-        self.screen.fill(GRAY)
-        pygame.display.flip()    
-class SettingsMenu: # Settings menu class
-    def __init__(self, screen, state_manager):
-        self.screen = screen
-        self.state_manager = state_manager
+#     def render(self):
+#         self.screen.fill(GRAY)
+#         pygame.display.flip()    
+# class SettingsMenu: # Settings menu class
+#     def __init__(self, screen, state_manager):
+#         self.screen = screen
+#         self.state_manager = state_manager
 
-    def handle_events(self, events):
-        for event in events:
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+#     def handle_events(self, events):
+#         for event in events:
+#             if event.type == pygame.QUIT:
+#                 pygame.quit()
+#                 sys.exit()
 
-    def update(self):
-        pass
+#     def update(self):
+#         pass
 
-    def render(self):
-        self.screen.fill(GRAY)
-        pygame.display.flip()   
-class LoginMenu: # Login menu class
-    def __init__(self, screen, state_manager):
-        self.screen = screen
-        self.state_manager = state_manager
+#     def render(self):
+#         self.screen.fill(GRAY)
+#         pygame.display.flip()   
+# class LoginMenu: # Login menu class
+#     def __init__(self, screen, state_manager):
+#         self.screen = screen
+#         self.state_manager = state_manager
 
-    def handle_events(self, events):
-        for event in events:
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+#     def handle_events(self, events):
+#         for event in events:
+#             if event.type == pygame.QUIT:
+#                 pygame.quit()
+#                 sys.exit()
 
-    def update(self):
-        pass
+#     def update(self):
+#         pass
 
-    def render(self):
-        self.screen.fill(GRAY)
-        pygame.display.flip()
-class RegisterMenu: # Register menu class
-    def __init__(self, screen, state_manager):
-        self.screen = screen
-        self.state_manager = state_manager
+#     def render(self):
+#         self.screen.fill(GRAY)
+#         pygame.display.flip()
+# class RegisterMenu: # Register menu class
+#     def __init__(self, screen, state_manager):
+#         self.screen = screen
+#         self.state_manager = state_manager
 
-    def handle_events(self, events):
-        for event in events:
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+#     def handle_events(self, events):
+#         for event in events:
+#             if event.type == pygame.QUIT:
+#                 pygame.quit()
+#                 sys.exit()
 
-    def update(self):
-        pass
+#     def update(self):
+#         pass
 
-    def render(self):
-        self.screen.fill(GRAY)
-        pygame.display.flip()         
-class HelpMenu: # Help menu class
-    def __init__(self, screen, state_manager):
-        self.screen = screen
-        self.state_manager = state_manager
+#     def render(self):
+#         self.screen.fill(GRAY)
+#         pygame.display.flip()         
+# class HelpMenu: # Help menu class
+#     def __init__(self, screen, state_manager):
+#         self.screen = screen
+#         self.state_manager = state_manager
 
-    def handle_events(self, events):
-        for event in events:
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
+#     def handle_events(self, events):
+#         for event in events:
+#             if event.type == pygame.QUIT:
+#                 pygame.quit()
+#                 sys.exit()
 
-    def update(self):
-        pass
+#     def update(self):
+#         pass
 
-    def render(self):
-        self.screen.fill(GRAY)
-        pygame.display.flip()
+#     def render(self):
+#         self.screen.fill(GRAY)
+#         pygame.display.flip()

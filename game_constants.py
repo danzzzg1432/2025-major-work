@@ -2,6 +2,8 @@ import pygame
 
 pygame.init()
 
+DEBUG_MODE = True
+
 # Screen settings
 SCREEN_WIDTH = 1280
 SCREEN_HEIGHT = 800
@@ -13,7 +15,7 @@ ASSETS_DIR = r"assets"
 IMAGES_DIR = f"{ASSETS_DIR}/images"
 SOUNDS_DIR = f"{ASSETS_DIR}/sounds"
 FONTS_DIR = f"{ASSETS_DIR}/fonts"
-SAVE_DIR = "savestates"
+SAVE_DIR = "savestates/save_data.json"
 
 # Colours (RGB values)
 WHITE = (255, 255, 255)
@@ -49,15 +51,16 @@ LOGO_FONT = f"{FONTS_DIR}/quicksand_variable.ttf"
 # Save/load settings
 SAVE_FILE_NAME = "save_data.json"
 
-# Game states
+
 MAIN_MENU = "main_menu"
 GAME_MENU = "game_menu"
-SETTINGS_MENU = "settings_menu"
-SHOP_MENU = "shop_menu"
-LOGIN_MENU = "login_menu"
-REGISTER_MENU = "register_menu"
-HELP_MENU = "help_menu"
+# SETTINGS_MENU = "settings_menu"
+# SHOP_MENU = "shop_menu"
+# LOGIN_MENU = "login_menu"
+# REGISTER_MENU = "register_menu"
+# HELP_MENU = "help_menu"
 TESTING = "testing"
+# Game states
 
 
 # Load Images

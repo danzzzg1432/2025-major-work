@@ -10,12 +10,18 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # Screen set up
 state_manager = StateManager(screen)
 pygame.display.set_caption(f"hi")
-
-# debugging stuff
-DEBUG_MODE = False  # Set to False in release
-
+   
 if DEBUG_MODE:
     print(state_manager)  # print all registered states
+
+# def load_game():
+#     try:
+#         user = SaveStates.load_user()
+#         print("Loaded successfully") if DEBUG_MODE else None
+#     except Exception as e:
+#         print(f"Error loading game: {e}") if DEBUG_MODE else None
+#         user = User(STARTING_MONEY, STARTING_LEVEL, STARTING_REPUTATION)
+# def save_game():
 
 # Main loop
 clock = pygame.time.Clock()
