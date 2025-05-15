@@ -1,4 +1,31 @@
 {
-    "money": 1000000,
-    "generators": []
+    "money": 100018257471.82423,
+    "generators": [
+        {
+            "id": "lemonade",
+            "level": 1,
+            "amount": 104
+        },
+        {
+            "id": "tutor",
+            "level": 1,
+            "amount": 19
+        },
+        {
+            "id": "professor",
+            "level": 1,
+            "amount": 655
+        }
+    ],
+    "managers": [
+        {
+            "id": "lemonade"
+        },
+        {
+            "id": "professor"
+        },
+        {
+            "id": "tutor"
+        }
+    ]
 }

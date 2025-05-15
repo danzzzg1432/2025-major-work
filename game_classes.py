@@ -5,6 +5,29 @@ import json
 from game_constants import *
 
 
+
+def format_large_number(num):  # Formats large numbers with suffixes
+    if num < 1000:
+        return str(int(num))
+    
+    magnitude = 0
+    while abs(num) >= 1000:
+        magnitude += 1
+        num /= 1000.0
+    
+    # Format with 3 decimal places and remove trailing zeros
+    formatted_num = f"{num:.3f}".rstrip('0').rstrip('.')
+    
+    # Return formatted number with appropriate suffix
+    suffixes = ["", "K", "MILLION", "BILLION", "TRILLION", "QUADRILLION", 
+                "QUINTILLION", "SEXTILLION", "SEPTILLION", "OCTILLION", "NONILLION", "DECILLION"]
+    
+    if magnitude < len(suffixes):
+        return f"{formatted_num} {suffixes[magnitude]}"
+    else:
+        return f"{formatted_num}e{magnitude*3}"
+
+
 class SaveStates:
     @staticmethod
     def get_path():
@@ -13,12 +36,14 @@ class SaveStates:
     @staticmethod
     def save_user(user):
         path = SaveStates.get_path()
+        print(f"\n (づ｡◕‿‿◕｡)づ Saving user to file location {path} \n") if DEBUG_MODE else None
         with open(path, "w") as f:
             json.dump(user.to_dict(), f, indent=4) 
 
     @staticmethod
     def load_user():
         path = SaveStates.get_path()
+        print(f"\n (づ｡◕‿‿◕｡)づ Loading user from file location {path} \n ") if DEBUG_MODE else None
         with open(path) as f:
             data = json.load(f)
         return User.from_dict(data)
@@ -57,6 +82,8 @@ class Generator:
         self.amount = amount # how many you own
     
     def manual_generate(self, user, quantity=1): # manually generated money
+        if self.amount == 0: # if you dont own any generators, return 0
+            return 0
         amount = self.base_rate * self.level * quantity
         user.money += amount
         return amount # returns the amount of money generated, ill see if I need this or not
@@ -71,12 +98,17 @@ class Generator:
         return int(self.base_price * (1.07 ** self.amount)) # price of the next generator, increases by 15% each time you buy one
     
     def buy(self, user, quantity=1): # buy a generator, quantity is the amount of generators to buy
-        total_cost = sum(
-            int(self.base_price * (1.07 ** i)) 
-            for i in range(self.amount, self.amount + quantity)) # total cost of the generators
-        if user.money >= total_cost:
-            user.money -= total_cost
-            self.amount += quantity # increase the amount of generators owned
+        a = self.base_price * (1.07 ** self.amount)
+        r = 1.07
+        n = quantity
+        # Formula for sum of geometric series: a * (1 - r^n) / (1 - r). actual application of mathematics is crazy
+        if r != 1:
+            total_cost = int(a * (1 - r**n) / (1 - r))
+        else:
+            total_cost = int(a * n)
+            if user.money >= total_cost:
+                user.money -= total_cost
+                self.amount += quantity # increase the amount of generators owned
     
     def to_dict(self): # returns a dictionary of the generator object
         return { 
@@ -96,21 +128,20 @@ class Generator:
             level=data["level"],
             amount=data["amount"]
         )
+    
 
 class Manager: # global manager class
-    def __init__(self, id, name, cost, owned):
+    def __init__(self, id, name, cost):
         self.id = id
         self.name = name
         self.cost = cost
         
     def buy(self, user):
         # attempts to hire this manager; deduct cost and register on user
-        if self.id in user.managers:
-            return False
-        elif user.money >= self.cost:
-                user.money -= self.cost
-                user.managers[self.id] = self
-                return True
+        if user.money >= self.cost:
+            user.money -= self.cost
+            user.managers[self.id] = self
+            return True
         return False
 
     def to_dict(self): # returns a dictionary of the manager object
@@ -144,6 +175,10 @@ class User:
             )
         
     def buy_manager(self, manager_id): # buy a manager
+        if manager_id in self.managers:
+            return False
+        if manager_id not in self.generators or self.generators[manager_id].amount == 0: # check if the generator exists in the user object and if you own it
+            return False
         self.ensure_manager(manager_id)
         return self.managers[manager_id].buy(self)
     
@@ -154,48 +189,40 @@ class User:
 
     def update(self, dt_seconds): # update the user object, called every frame
         for gen in self.generators.values():
-            if gen.id in self.managers:
+            if gen.id in self.managers and gen.amount > 0: # 
                 self.money += gen.rate * dt_seconds
     
+    
     def to_dict(self): # returns a dictionary of all the users data
-        return{ 
-               "money": self.money,
-               "generators": {generator.to_dict() for generator in self.generators.values()},
-               "managers": {manager.to_dict() for manager in self.managers.values()},
-               }
+        return {
+            "money": self.money,
+            "generators": [generator.to_dict() for generator in self.generators.values()],
+            "managers": [manager.to_dict() for manager in self.managers.values()],
+        }
+        
+    def debug_generators(self):  # new debugging method
+        print("---- Debug Generators Info ----")
+        for gen_id, generator in self.generators.items():
+            manager = self.managers.get(gen_id)
+            manager_str = f"Manager: {manager.name}" if manager else "No Manager Assigned"
+            print(f"Generator: {generator.name} | Owned: {generator.amount} | {manager_str}")
+        print("-------------------------------")
     
     @classmethod
-    def from_dict(cls, data): # creates a user object from a dictionary, essentially encapsulates the user object into a dictionary for saving/loading purposes
+    def from_dict(cls, data): # creates a user object from a dictionary for saving/loading purposes
         user = cls(data["money"])
-        for generator_data in data["generators"]:
+        for generator_data in data.get("generators", []):
             generator = Generator.from_dict(generator_data)
             user.generators[generator.id] = generator # add the generator to the user object
-        for manager_data in data["managers"]:
+        for manager_data in data.get("managers", []):
             manager = Manager.from_dict(manager_data)
             user.managers[manager.id] = manager
+        return user
         
-        return user #
-        
-    # old code
-    # def add_generator(self, generator): # perhaps later include a feature to multiple-buy generators -> add button in the shop menu which switches from 1x, 10x, 100x, then buy that amount probably by passing through the amount in this class
-    #     if generator.name not in self.generators: # check if generator already exists
-    #         self.generators[generator.name] = generator
-    #     generator.increase_amount()
-     
-    # def get_money(self):
-    #     return round(self.money)
-    
-    # def set_money(self, new_money):
-    #     self.money = new_money
-        
-    # def earn_money(self, generator):
-    #     if generator.name in self.generators:
-    #         self.money += generator.generate_money()
     
 # Screens and Menus
-user = User(1000000) # test user lol
 class StateManager: # global state manager
-    def __init__(self, screen):
+    def __init__(self, screen, user):
         self.state = TESTING # set initial state to main menu (for now)
         self.states = {
             MAIN_MENU: MainMenu(screen, self),
@@ -248,6 +275,7 @@ class MainMenu: # Main menu class
     def handle_events(self, events): # handle events for the main menu
         for event in events:
             if event.type == pygame.QUIT:
+                SaveStates.save_user(self.user)
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -264,6 +292,19 @@ class MainMenu: # Main menu class
                 button.colour = DARK_GRAY
             else:
                 button.colour = button.initial_colour
+                
+    def load_game(self):
+        try:
+            loaded_user = SaveStates.load_user()
+            # Update the global user object
+            global user
+            user = loaded_user
+            if DEBUG_MODE: # load testing user if DEBUG_MODE is true
+                self.state_manager.states[TESTING].user = user
+            print("Game loaded successfully!") if DEBUG_MODE else None
+            self.state_manager.set_state(GAME_MENU)
+        except Exception as e:
+            print(f"Error loading game: {e}") if DEBUG_MODE else None
 
     def render(self):
         self.screen.fill(WHITE)  # Set background colour
@@ -272,15 +313,12 @@ class MainMenu: # Main menu class
         for button in self.buttons:
             button.draw(self.screen)
         pygame.display.flip()
-        
-    def load_game(self):
-        # self.state_manager.set_state(GAME_MENU) -> Placeholder for load game functionality
-        pass
     
     def settings(self):
         pass
     
     def quit_game(self):
+        SaveStates.save_user(self.user)
         pygame.quit()
         sys.exit()
     
@@ -310,6 +348,7 @@ class GameMenu: # Game menu class, mostly placeholder for now
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.QUIT:
+                SaveStates.save_user(self.user)
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:
@@ -403,7 +442,7 @@ class Testing:
         self.user = user
         self.buttons = self.create_buttons()
         self.screen_elements = {
-            "money_display": CreateFrect(300, 60, 60, 60, "Pink", id="money_display", font=self.font, font_colour="Black", display_callback=lambda: f"ATAR POINTS: {round(self.user.money)}")
+            "money_display": CreateFrect(300, 60, 60, 60, "PINK", id="money_display", font=self.font, font_colour="Black", display_callback=lambda: f"ATAR POINTS: {format_large_number(round(self.user.money))}")
         }
         self.last_time = pygame.time.get_ticks() / 1000  # track for dt
 
@@ -435,6 +474,7 @@ class Testing:
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.QUIT:
+                SaveStates.save_user(self.user)
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:

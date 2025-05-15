@@ -37,8 +37,6 @@ main_button_x = (SCREEN_WIDTH - BUTTON_WIDTH) // 2
 
 # Game settings
 STARTING_MONEY = 1000
-STARTING_LEVEL = 1
-STARTING_REPUTATION = 0
 
 # Font Settings
 pygame.font.init()
