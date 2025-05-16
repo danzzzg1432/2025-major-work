@@ -1,31 +1,33 @@
 {
-    "money": 100018257471.82423,
+    "money": 552554.5000034758,
     "generators": [
-        {
-            "id": "lemonade",
-            "level": 1,
-            "amount": 104
-        },
         {
             "id": "tutor",
             "level": 1,
-            "amount": 19
+            "amount": 60
         },
         {
-            "id": "professor",
+            "id": "high_performance_student",
             "level": 1,
-            "amount": 655
+            "amount": 93
+        },
+        {
+            "id": "student",
+            "level": 1,
+            "amount": 138
+        },
+        {
+            "id": "anandhasundram_parameswaran",
+            "level": 1,
+            "amount": 73
         }
     ],
     "managers": [
         {
-            "id": "lemonade"
-        },
-        {
-            "id": "professor"
-        },
-        {
             "id": "tutor"
+        },
+        {
+            "id": "anandhasundram_parameswaran"
         }
     ]
 }

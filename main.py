@@ -1,8 +1,9 @@
 import pygame
+
 from game_constants import *  
 from game_classes import *
-import sys
 
+import sys
 import time
 
 # Initialise pygame and screen
@@ -16,12 +17,12 @@ try: # Load user data from save file
     user = SaveStates.load_user()
 except Exception as e:
     if DEBUG_MODE:
-        print(f"Error loading save file: {e}")
+        print(f" (≧ヘ≦ ) Error loading save file: {e}")
     user = User(STARTING_MONEY)
 
 # Screen set up
 state_manager = StateManager(screen, user)
-pygame.display.set_caption(f"hi")
+pygame.display.set_caption(f"Idle Tutor Tycoon - {GAME_TITLE}")
    
 if DEBUG_MODE:
     print(state_manager)  # print all registered states
@@ -40,8 +41,9 @@ while True:
         current_screen.render()
     # if user input not detected for more than 2 minutes, drop fps down to 15
     else: # if no current screen is found, exit the game, easier debugging
-        print("No current screen found, exiting game.")
+        print("\n\n (≧ヘ≦ ) No current screen found, exiting game. (≧ヘ≦ ) \n\n")
         SaveStates.save_user(user)
+        
         pygame.quit()
         sys.exit()
     if DEBUG_MODE:
@@ -49,6 +51,7 @@ while True:
         if now >= next_debug:
             print(f"\n\n (づ｡◕‿‿◕｡)づ #{count} New debug info: \n")
             user.debug_generators()
-            next_debug = now + 5
+            next_debug = now + 10
             count += 1
+        
     clock.tick(FPS)  # Control game speed

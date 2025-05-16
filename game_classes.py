@@ -20,7 +20,9 @@ def format_large_number(num):  # Formats large numbers with suffixes
     
     # Return formatted number with appropriate suffix
     suffixes = ["", "K", "MILLION", "BILLION", "TRILLION", "QUADRILLION", 
-                "QUINTILLION", "SEXTILLION", "SEPTILLION", "OCTILLION", "NONILLION", "DECILLION"]
+                "QUINTILLION", "SEXTILLION", "SEPTILLION", "OCTILLION", "NONILLION", "DECILLION", "UNDECILLION", 
+                "DUODECILLION", "TREDECILLION", "QUATTUORDECILLION", "QUINDECILLION", "SEXDECILLION", "SEPTENDECILLION", 
+                "OCTODECILLION", "NOVEMDECILLION", "VIGINTILLION"]
     
     if magnitude < len(suffixes):
         return f"{formatted_num} {suffixes[magnitude]}"
@@ -73,13 +75,14 @@ class Button: # global button class
             self.callback()
         
 class Generator:
-    def __init__(self, id, name, base_rate, base_price, level=1, amount=0):
+    def __init__(self, id, name, base_rate, base_price, level=1, amount=0, growth_rate=1.07):
         self.id = id # unique identifier for the generator - constant generators are in game_constants.py
         self.base_rate = base_rate
         self.name = name
         self.base_price = base_price # base price of the generator
         self.level = level # multiplier level
         self.amount = amount # how many you own
+        self.growth_rate = growth_rate # growth rate of the generator, how much the price increases each time you buy one
     
     def manual_generate(self, user, quantity=1): # manually generated money
         if self.amount == 0: # if you dont own any generators, return 0
@@ -95,20 +98,19 @@ class Generator:
     
     @property
     def next_price(self): # price of the next generator, increases by 15% each time you buy one. This one is the one shown to the user - the buy() method has this already inline
-        return int(self.base_price * (1.07 ** self.amount)) # price of the next generator, increases by 15% each time you buy one
+        return int(self.base_price * (self.growth_rate ** self.amount)) # price of the next generator, increases by 15% each time you buy one
     
     def buy(self, user, quantity=1): # buy a generator, quantity is the amount of generators to buy
-        a = self.base_price * (1.07 ** self.amount)
-        r = 1.07
+        a = self.base_price * (self.growth_rate ** self.amount)
         n = quantity
-        # Formula for sum of geometric series: a * (1 - r^n) / (1 - r). actual application of mathematics is crazy
-        if r != 1:
-            total_cost = int(a * (1 - r**n) / (1 - r))
+        # Formula for sum of geometric series: a * (1 - r^n) / (1 - r), where r is the generator's growth rate. actual application of mathematics is crazy
+        if self.growth_rate != 1:
+            total_cost = int(a * (1 - (self.growth_rate)**n) / (1 - (self.growth_rate)))
         else:
             total_cost = int(a * n)
-            if user.money >= total_cost:
-                user.money -= total_cost
-                self.amount += quantity # increase the amount of generators owned
+        if user.money >= total_cost:
+            user.money -= total_cost
+            self.amount += quantity # increase the amount of generators owned
     
     def to_dict(self): # returns a dictionary of the generator object
         return { 
@@ -126,7 +128,8 @@ class Generator:
             base_rate=proto["base_rate"],
             base_price=proto["base_price"],
             level=data["level"],
-            amount=data["amount"]
+            amount=data["amount"],
+            growth_rate=proto["growth_rate"]
         )
     
 
@@ -390,7 +393,7 @@ class CreateFrect:
             self.image = pygame.image.load(image_path).convert_alpha()
             self.image = pygame.transform.scale(self.image, (width, height))
 
-    def render_text(self, position="center", display=None): # default is center
+    def render_text(self, position="center", display=None): # render text inside the frect
         position_bank = {
         "center": "center",
         "topleft": "topleft",
@@ -450,24 +453,31 @@ class Testing:
         buttons = []
 
         # dynamically create 3 columns: Buy Gen, Manual Gen, Hire Manager
-        padding_x = 200
+        padding_x = 150
         padding_y = 200
-        col_width = 220
+        col_width = 275
         for idx, (generator_id, prototype) in enumerate(GENERATOR_PROTOTYPES.items()): # loop through all the generators
             x = padding_x + (idx * col_width)
-            # 1) Buy Generator
+            # 1) Purchase generators
             buttons.append(Button(
-            x, padding_y + 0*60, BUTTON_WIDTH, BUTTON_HEIGHT,
-            f"Buy {prototype['name']}",
-            GRAY, self.font, BLACK,
-            callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id), self.user.buy_generator(generator_id) )
+                x, padding_y + 0*200, BUTTON_WIDTH, BUTTON_HEIGHT,
+                f"Buy {prototype['name']}",
+                GRAY, self.font, BLACK,
+                callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id), self.user.buy_generator(generator_id) )
             ))
             # 2) Manual Generate
-            buttons.append(Button(x, padding_y + 1*60, BUTTON_WIDTH, BUTTON_HEIGHT, f"Gen {prototype['name']}", YELLOW, self.font, BLACK, callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id), self.user.generators[generator_id].manual_generate(self.user) )
+            buttons.append(Button(
+                x, padding_y + 1*60, 100, BUTTON_HEIGHT,
+                f"Gen {prototype['name']}", 
+                YELLOW, self.font, BLACK, 
+                callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id), self.user.generators[generator_id].manual_generate(self.user) )
             ))
             # 3) Hire Manager
             mproto = MANAGER_PROTOTYPES[generator_id]
-            buttons.append(Button( x, padding_y + 2*60, BUTTON_WIDTH, BUTTON_HEIGHT, f"Hire {mproto['name']}", BLUE, self.font, BLACK, callback=lambda generator_id=generator_id: ( self.user.buy_manager(generator_id) )
+            buttons.append(Button( 
+                x, padding_y + 2*60, 100, BUTTON_HEIGHT, 
+                f"Hire {mproto['name']}", YELLOW, self.font, BLACK, 
+                callback=lambda generator_id=generator_id: ( self.user.buy_manager(generator_id) )
             ))
         return buttons
        
@@ -513,96 +523,89 @@ class Testing:
         pygame.display.flip()
        
        
+class GameMenu:
+    def __init__(self, screen, user, state_manager):
+        self.screen = screen
+        self.state_manager = state_manager
+        self.font = pygame.font.Font(LOGO_FONT, MAIN_MENU_BUTTON_SIZE)
+        self.user = user
+        self.buttons = self.create_buttons()
+        self.screen_elements = {
+            "money_display": CreateFrect(300, 60, 60, 60, "PINK", id="money_display", font=self.font, font_colour="Black", display_callback=lambda: f"ATAR POINTS: {format_large_number(round(self.user.money))}")
+        }
+        self.last_time = pygame.time.get_ticks() / 1000  # track for dt
 
+    def create_buttons(self):
+        buttons = [] # buttons list
+        padding_x = 150
+        padding_y = 200
+        col_width = 275
+        for idx, (generator_id, prototype) in enumerate(GENERATOR_PROTOTYPES.items()): # loop through all the generators, also add 
+            x = padding_x + (idx * col_width)
+            # 1) Purchase generators
+            buttons.append(Button(
+                x, padding_y + 0*200, BUTTON_WIDTH, BUTTON_HEIGHT,
+                f"Buy {prototype['name']}",
+                GRAY, self.font, BLACK,
+                callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id), self.user.buy_generator(generator_id) )
+            ))
+            # 2) Manual Generate
+            buttons.append(Button(
+                x, padding_y + 1*60, 100, BUTTON_HEIGHT,
+                f"GEN {prototype['name']}", 
+                YELLOW, self.font, BLACK, 
+                callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id), self.user.generators[generator_id].manual_generate(self.user) )
+            ))
+            # 3) Hire Manager
+            mproto = MANAGER_PROTOTYPES[generator_id]
+            buttons.append(Button( 
+                x, padding_y + 2*60, 100, BUTTON_HEIGHT, 
+                f"Hire {mproto['name']}", YELLOW, self.font, BLACK, 
+                callback=lambda generator_id=generator_id: ( self.user.buy_manager(generator_id) )
+            ))
+        return buttons
+       
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.QUIT:
+                SaveStates.save_user(self.user)
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                for button in self.buttons:
+                    if button.is_hovered(mouse_pos):
+                        button.click()
+        return True
        
        
        
+    def update(self):
+        # 1) Auto‐production
+        now = pygame.time.get_ticks() / 1000
+        dt  = now - self.last_time
+        self.user.update(dt)
+        self.last_time = now
+
+        # 2) Button hover coloring
+        mouse_pos = pygame.mouse.get_pos()
+        for btn in self.buttons:
+            btn.colour = DARK_GRAY if btn.is_hovered(mouse_pos) else btn.initial_colour
        
        
-       
+    def render(self):
+        self.screen.fill(WHITE)  # Set background colour
+        self.screen.blit(main_menu_background) # load background image
         
-# class ShopMenu: # Shop menu class
-#     def __init__(self, screen, state_manager):
-#         self.screen = screen
-#         self.state_manager = state_manager
-
-#     def handle_events(self, events):
-#         for event in events:
-#             if event.type == pygame.QUIT:
-#                 pygame.quit()
-#                 sys.exit()
-
-#     def update(self):
-#         pass
-
-#     def render(self):
-#         self.screen.fill(GRAY)
-#         pygame.display.flip()    
-# class SettingsMenu: # Settings menu class
-#     def __init__(self, screen, state_manager):
-#         self.screen = screen
-#         self.state_manager = state_manager
-
-#     def handle_events(self, events):
-#         for event in events:
-#             if event.type == pygame.QUIT:
-#                 pygame.quit()
-#                 sys.exit()
-
-#     def update(self):
-#         pass
-
-#     def render(self):
-#         self.screen.fill(GRAY)
-#         pygame.display.flip()   
-# class LoginMenu: # Login menu class
-#     def __init__(self, screen, state_manager):
-#         self.screen = screen
-#         self.state_manager = state_manager
-
-#     def handle_events(self, events):
-#         for event in events:
-#             if event.type == pygame.QUIT:
-#                 pygame.quit()
-#                 sys.exit()
-
-#     def update(self):
-#         pass
-
-#     def render(self):
-#         self.screen.fill(GRAY)
-#         pygame.display.flip()
-# class RegisterMenu: # Register menu class
-#     def __init__(self, screen, state_manager):
-#         self.screen = screen
-#         self.state_manager = state_manager
-
-#     def handle_events(self, events):
-#         for event in events:
-#             if event.type == pygame.QUIT:
-#                 pygame.quit()
-#                 sys.exit()
-
-#     def update(self):
-#         pass
-
-#     def render(self):
-#         self.screen.fill(GRAY)
-#         pygame.display.flip()         
-# class HelpMenu: # Help menu class
-#     def __init__(self, screen, state_manager):
-#         self.screen = screen
-#         self.state_manager = state_manager
-
-#     def handle_events(self, events):
-#         for event in events:
-#             if event.type == pygame.QUIT:
-#                 pygame.quit()
-#                 sys.exit()
-
-#     def update(self):
-#         pass
-
-#     def render(self):
-#         self.screen.fill(GRAY)
-#         pygame.display.flip()
+        for button in self.buttons:
+            button.draw(self.screen)
+        for element in self.screen_elements.values():
+            element.draw(self.screen)
+        self.screen.blit(williamdu, (600, 600))
+        
+        
+        pygame.display.flip()
+       
+       
+       
+       
