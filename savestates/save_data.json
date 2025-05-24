@@ -1,33 +1,47 @@
 {
-    "money": 552554.5000034758,
+    "money": 2034924901.4034657,
     "generators": [
         {
-            "id": "tutor",
+            "id": "student",
             "level": 1,
-            "amount": 60
+            "amount": 73
         },
         {
             "id": "high_performance_student",
             "level": 1,
-            "amount": 93
+            "amount": 29
         },
         {
-            "id": "student",
+            "id": "tutor",
             "level": 1,
-            "amount": 138
+            "amount": 35
         },
         {
             "id": "anandhasundram_parameswaran",
             "level": 1,
-            "amount": 73
+            "amount": 169
+        },
+        {
+            "id": "dilliam_wu",
+            "level": 1,
+            "amount": 132
         }
     ],
     "managers": [
         {
-            "id": "tutor"
+            "id": "student"
+        },
+        {
+            "id": "high_performance_student"
         },
         {
             "id": "anandhasundram_parameswaran"
+        },
+        {
+            "id": "tutor"
+        },
+        {
+            "id": "dilliam_wu"
         }
     ]
 }

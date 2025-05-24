@@ -1,14 +1,15 @@
 import pygame
 
 pygame.init()
+pygame.font.init()
 
 DEBUG_MODE = True
 
 # Screen settings
-SCREEN_WIDTH = 1280
+SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
 GAME_TITLE = "Idle Tutor Tycoon"
-FPS = 60
+FPS = 600
 
 # Defining file paths
 ASSETS_DIR = r"assets"
@@ -66,7 +67,7 @@ BLACK = (0, 0, 0)
 
 
 # UI settings
-DEFAULT_FONT_SIZE = 40
+DEFAULT_FONT_SIZE = 20
 BUTTON_WIDTH = 250
 BUTTON_HEIGHT = 60
 BUTTON_SPACING = 20
@@ -77,10 +78,10 @@ main_button_x = (SCREEN_WIDTH - BUTTON_WIDTH) // 2
 STARTING_MONEY = 1000
 
 # Font Settings
-pygame.font.init()
 MAIN_MENU_LOGO_SIZE = 90
 MAIN_MENU_BUTTON_SIZE = 25
 LOGO_FONT = f"{FONTS_DIR}/quicksand_variable.ttf"
+DEFAULT_FONT = pygame.font.Font(LOGO_FONT, MAIN_MENU_BUTTON_SIZE)
 
 
 # ---------- LOADING STUFF -----------
@@ -107,16 +108,18 @@ def load_image(image_path, scale=None):
     return image
 
 williamdu = load_image(f"{IMAGES_DIR}/williamdu.png", (300, 300))
-main_menu_background = load_image(f"{IMAGES_DIR}/dr_du_logo.png")
+main_menu_background = load_image(f"{IMAGES_DIR}/ittmainmenu.png")
 idle_tutor_tycoon_logo = load_image(f"{IMAGES_DIR}/itt_logo.png")
+game_menu_background = load_image(f"{IMAGES_DIR}/ittgamebackground.png")
 
 # Generator prototypes
 GENERATOR_PROTOTYPES = {
     # id: { name, base_rate (points/sec), base_price (initial cost), growth_rate (cost multiplier) }
-    "student":   { "name": "Student", "base_rate": 1,   "base_price": 10, "growth_rate": 1.07 },
-    "high_performance_student": { "name": "High Performance Student", "base_rate": 5,   "base_price": 100, "growth_rate": 1.08  },
-    "tutor":  { "name": "Professor", "base_rate": 500,  "base_price": 1000, "growth_rate": 1.09 },
-    "anandhasundram_parameswaran": { "name": "The Math God Mr Param", "base_rate": 1000, "base_price": 10000, "growth_rate": 1.1 },
+    "student":   { "name": "Student", "base_rate": 1,   "base_price": 3.738, "growth_rate": 1.07 },
+    "high_performance_student": { "name": "High Performance Student", "base_rate": 60,   "base_price": 60, "growth_rate": 1.15  },
+    "tutor":  { "name": "Professor", "base_rate": 720,  "base_price": 540, "growth_rate": 1.14 },
+    "anandhasundram_parameswaran": { "name": "The Math God Mr Param", "base_rate": 4320, "base_price": 8640, "growth_rate": 1.13 },
+    "dilliam_wu": { "name": "Dr Wu", "base_rate": 51840, "base_price": 103680, "growth_rate": 1.12 },
     
 }
 
@@ -127,4 +130,5 @@ MANAGER_PROTOTYPES = {
     "high_performance_student":     { "name": "Rank 1 Committee",     "cost":  1000  },
     "tutor": { "name": "Tutor manager", "cost": 10000  },
     "anandhasundram_parameswaran": { "name": "His Kookaburra", "cost": 100000 },
+    "dilliam_wu": { "name": "Wu's Assistant", "cost": 10000000 },
 }
