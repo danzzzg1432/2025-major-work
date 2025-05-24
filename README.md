@@ -1,14 +1,13 @@
 # 2025-major-work
 HSC Software Engineering Major Work - Daniel Guo
 
-### Details of the game
+### Website:
+
+### Video:
 
 
-### How to run:
-
-#### Video Tutorial
 
 
-#### Credits
-Clear Code - YouTube
-PyGame-CE Documentation
+
+
+
