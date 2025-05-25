@@ -8,7 +8,7 @@ class Button: # global button class
     It is a simple class that takes in the x, y, width, height, text, colour, font, text_colour, callback and display callback functions and returns an object out of it.
     It handles its own rendering, clicking, hovering and any other events needed through callbacks and lambdas.
     """
-    def __init__(self, x, y, width, height, text, colour, font, text_colour, callback=None, display_callback=None, button_id=str): # callback is a function that is called when the button is clicked
+    def __init__(self, x, y, width, height, text, colour, font, text_colour, callback=None, display_callback=None, icon_image = None, button_id=str): # callback is a function that is called when the button is clicked
         self.rect = pygame.Rect(x, y, width, height)
         self.text = text
         self.colour = colour
@@ -18,6 +18,7 @@ class Button: # global button class
         self.callback = callback # calls a pre-defined function when a button is clicked, encapsulates button actions inside the button class itself
         self.display_callback = display_callback # for displays requiring dynamic updates
         self.id = button_id # unique identifier
+        self.icon_image = icon_image  # Optional icon image for the button
 
     def draw(self, screen): # draws the button on the screen
         if self.display_callback: # if display_callback is set, use it to get the text.

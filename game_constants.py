@@ -9,7 +9,7 @@ DEBUG_MODE = True
 SCREEN_WIDTH = 1200
 SCREEN_HEIGHT = 800
 GAME_TITLE = "Idle Tutor Tycoon"
-FPS = 600
+FPS = 60
 
 # Defining file paths
 ASSETS_DIR = r"assets"
@@ -66,7 +66,7 @@ DARK_GRAY = (150, 150, 150)
 BLACK = (0, 0, 0)
 
 
-# UI settings
+# UI settings 
 DEFAULT_FONT_SIZE = 20
 BUTTON_WIDTH = 250
 BUTTON_HEIGHT = 60
@@ -75,7 +75,7 @@ BUTTON_BORDER_RADIUS = 15
 main_button_x = (SCREEN_WIDTH - BUTTON_WIDTH) // 2
 
 # Game settings
-STARTING_MONEY = 1000
+STARTING_MONEY = 10
 
 # Font Settings
 MAIN_MENU_LOGO_SIZE = 90

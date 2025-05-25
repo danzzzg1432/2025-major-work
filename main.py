@@ -7,7 +7,6 @@ from game_states import *  # Import game states
 from save_loads import *  # Import save/load functions
 
 
-# from game_classes import *
 
 import sys
 import time
@@ -21,11 +20,32 @@ try: # Load user data from save file
         print("\n\n\n (づ｡◕‿‿◕｡)づ DEBUG MODE ACTIVE (づ｡◕‿‿◕｡)づ \n\n\n")
         print("Loaded user data from save file.")
     user = SaveStates.load_user() # creates the currentuser object from saved data
+    
+    
+    """offline generation function"""
+    
+    print(f"\nTime elapsed when loading user {SaveStates.time_elapsed()}") if DEBUG_MODE else None
+    offline_generated_money = user.income_per_second * SaveStates.time_elapsed()
+    print(f"\nOffline generated money = ${offline_generated_money} ")
+    user.money += offline_generated_money # add money to user
+    
+    
+    
 except Exception as e:
     if DEBUG_MODE:
         print(f" (≧ヘ≦ ) Error loading save file: {e} (≧ヘ≦ ) ")
     user = User(STARTING_MONEY) 
 
+''' IDEA FOR BACKGROUND GENERATION:
+    when saving, grab current system time
+    when loading, grab current system time
+    calculate difference in seconds
+    multiply by user's generation rate per second
+    add to users money
+    if difference is greater than 10% of users money, blit a box telling the user how much money they have generated while they were away
+    and click anywhere to continue
+
+'''
 # Screen set up
 state_manager = StateManager(screen, user) # -> creates state manager and accepts the universal user
 pygame.display.set_caption(f"Idle Tutor Tycoon - {GAME_TITLE}")

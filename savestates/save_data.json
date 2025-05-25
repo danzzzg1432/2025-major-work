@@ -1,47 +1,34 @@
 {
-    "money": 2034924901.4034657,
-    "generators": [
-        {
-            "id": "student",
-            "level": 1,
-            "amount": 73
-        },
-        {
-            "id": "high_performance_student",
-            "level": 1,
-            "amount": 29
-        },
-        {
-            "id": "tutor",
-            "level": 1,
-            "amount": 35
-        },
-        {
-            "id": "anandhasundram_parameswaran",
-            "level": 1,
-            "amount": 169
-        },
-        {
-            "id": "dilliam_wu",
-            "level": 1,
-            "amount": 132
-        }
-    ],
-    "managers": [
-        {
-            "id": "student"
-        },
-        {
-            "id": "high_performance_student"
-        },
-        {
-            "id": "anandhasundram_parameswaran"
-        },
-        {
-            "id": "tutor"
-        },
-        {
-            "id": "dilliam_wu"
-        }
-    ]
+    "user_data": {
+        "money": 19347.87251799996,
+        "generators": [
+            {
+                "id": "student",
+                "level": 1,
+                "amount": 1
+            },
+            {
+                "id": "high_performance_student",
+                "level": 1,
+                "amount": 1
+            },
+            {
+                "id": "tutor",
+                "level": 1,
+                "amount": 1
+            }
+        ],
+        "managers": [
+            {
+                "id": "student"
+            },
+            {
+                "id": "high_performance_student"
+            },
+            {
+                "id": "tutor"
+            }
+        ]
+    },
+    "save_time": "2025-05-25T05:08:20.849626+00:00"
 }

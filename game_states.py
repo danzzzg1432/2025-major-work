@@ -3,6 +3,7 @@ from game_constants import *  # Import game constants
 from game_logic import *
 from ui_elements import *
 from save_loads import *
+
 from utils import format_large_number
 
 
@@ -46,36 +47,53 @@ class StateManager: # global state manager
         print(f"Current States: {self.state}, States: {state_names}") if DEBUG_MODE else None # debugging line 
         return ""
     
-class MainMenu:  # —— Main menu screen, matching your sketch —— 
+class MainMenu:  # —— Main menu screen
     def __init__(self, screen, user, state_manager):
         self.screen = screen
         self.state_manager = state_manager
         self.title_font = pygame.font.Font(LOGO_FONT, 100)
         self.button_font = DEFAULT_FONT
         self.user = user
-        # two big center buttons
-        self.buttons = self.create_buttons()
+        # buttons in the center
+        self.centre_buttons = self.create_centre_buttons()
+        # other buttons
+        self.other_buttons = self.create_other_buttons()
 
-        # three round icons on the left
-        self.icons = self.create_icons()
 
-
-    def create_buttons(self):
+    def create_centre_buttons(self):
         main_x = (SCREEN_WIDTH - BUTTON_WIDTH) // 2
         return [
-            Button(
+            Button( # enter game button
                 main_x, 360, BUTTON_WIDTH, BUTTON_HEIGHT,
                 "Enter Game", GRAY, self.button_font, BLACK,
                 callback=self.start_game
             ),
-            Button(
-                main_x, 440, BUTTON_WIDTH, BUTTON_HEIGHT,
-                "Settings", GRAY, self.button_font, BLACK,
-                callback=self.open_settings
-            ),
+            # Button( # settings button
+            #     main_x, 440, BUTTON_WIDTH, BUTTON_HEIGHT,
+            #     "Settings", GRAY, self.button_font, BLACK,
+            #     callback=self.open_settings
+            # ),
         ]
-
-    def create_icons(self):
+    """ in all seriousness these two functions are the same idk why they are separated"""
+    def create_other_buttons(self):
+        
+        return [
+            Button( # quit button
+                50, 360, 60, 60, "quit", GRAY, self.button_font, 
+                BLACK, callback=self.quit_game
+            ),
+            
+            Button( # help button
+                50, 460, 60, 60, "❔", GRAY, self.button_font,
+                BLACK, callback=self.show_help
+            ),
+            
+            Button( # settings button
+                   50, 560, 60, 60, "⚙️", GRAY, self.button_font,
+                BLACK, callback=self.open_settings
+            ),
+            
+        ]
         icon_size = 60
         icon_x = 50
         y_start = 360
@@ -110,6 +128,11 @@ class MainMenu:  # —— Main menu screen, matching your sketch ——
     def show_help(self):
         # TODO: implement help-screen transition here
         print("Help icon clicked") if DEBUG_MODE else None
+        
+    def quit_game(self):
+        SaveStates.save_user(self.user)
+        pygame.quit()
+        sys.exit()
 
     # event handling ────────────────────────────────────────────────────
     def handle_events(self, events):
@@ -122,42 +145,33 @@ class MainMenu:  # —— Main menu screen, matching your sketch ——
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-
-                # icons
-                for icon in self.icons:
-                    if icon.frect.collidepoint(pos):
-                        if icon.id == "help":
-                            self.show_help()
-                        elif icon.id == "quit":
-                            # call existing quit_game (saves & sys.exit)
-                            self.quit_game()
-                        # elif icon.id == "stats":
                 
                 # big buttons
-                for btn in self.buttons:
+                for btn in self.centre_buttons + self.other_buttons:
                     if btn.is_hovered(pos):
                         btn.click()
 
+
         return True
 
-    # hover-state updates ─────────────────────────────────────────────────
+    # updates ─────────────────────────────────────────────────
     def update(self):
         pos = pygame.mouse.get_pos()
-        for btn in self.buttons:
+        for btn in self.centre_buttons + self.other_buttons:
             btn.animations(pos)
+
 
     # rendering ───────────────────────────────────────────────────────────
     def render(self):
-        
-        
+        # blit background image
         self.screen.blit(main_menu_background, (-200,0)) 
         
         # draw big buttons
-        for btn in self.buttons:
+        for btn in self.centre_buttons:
             btn.draw(self.screen)
 
         # draw left-side icons
-        for icon in self.icons:
+        for icon in self.other_buttons:
             icon.draw(self.screen)
 
         pygame.display.flip()
@@ -166,10 +180,6 @@ class MainMenu:  # —— Main menu screen, matching your sketch ——
     def settings(self):
         pass
 
-    def quit_game(self):
-        SaveStates.save_user(self.user)
-        pygame.quit()
-        sys.exit()
 
 
 class GameMenu:
@@ -225,29 +235,12 @@ class GameMenu:
                 height=income_display_height,
                 bg_colour=None,
                 font=self.subtitle_font,
-                font_colour=BLACK, 
+                font_colour=WHITE, 
                 display_callback=lambda: f"{format_large_number(round(self.user.income_per_second))}/s"
             )
             
         }
         self.rows = self.create_rows() # generator row creating
-
-    #  # Centered Values
-    #     money_val_str = format_large_number(round(self.user.money))
-    #     income_val_str = f"{format_large_number(round(self.user.income_per_second))}/s"
-
-    #     # ATAR POINTS value
-    #     money_value_surf = self.title_font.render(money_val_str, True, WHITE) # Use title_font for larger display
-    #     money_value_rect = money_value_surf.get_rect(midtop=(SCREEN_WIDTH//2,  20))
-    #     self.screen.blit(money_value_surf, money_value_rect)
-
-    #     # REVENUE PER SECOND value
-    #     income_value_surf = self.subtitle_font.render(income_val_str, True, BLACK)
-    #     income_value_rect = income_value_surf.get_rect(midtop=(SCREEN_WIDTH//2, money_value_rect.bottom + 10)) # Position below ATAR points
-    #     self.screen.blit(income_value_surf, income_value_rect)
-    # TODO: add outlines, background, colours, etc.
-    
-    # most stuff is copied from testing class lol
     """
     notes
     bugs ive noted:
@@ -301,7 +294,7 @@ class GameMenu:
                              display_callback=lambda gid=g_id, pr=proto:
                                  f"Buy ({format_large_number(self.user.generators.get(gid,Generator(gid,**pr)).next_price)})")
             
-            buy_manager = Button( 
+            buy_manager = Button( #temporary placeholder for manager button, will be moved to the shop menu
                 bar_x+250, row_y+self.ICON_SIZE-14, 50, 32,
                 "", GRAY, DEFAULT_FONT, BLACK,
                 callback=lambda g_id=g_id: ( self.user.buy_manager(g_id) ),
@@ -328,6 +321,15 @@ class GameMenu:
             
             idx += 1
         return rows
+    
+    # callbacks ──────────────────────────────────────────────────────────
+    def save_and_exit(self):
+        SaveStates.save_user(self.user)
+        print("\n (づ｡◕‿‿◕｡)づ Saving user! \n") if DEBUG_MODE else None
+        self.state_manager.set_state(MAIN_MENU) # go back to main menu
+        
+    def save(self):
+        SaveStates.save_user(self.user) # save the user object
 
     # event handling ──────────────────────────────────────────────────────────
     def handle_events(self, events): 
@@ -353,7 +355,7 @@ class GameMenu:
         return True
 
 
-    # update loop ──────────────────────────────────────────────────────────
+    # updates ──────────────────────────────────────────────────────────
     def update(self):
         now = pygame.time.get_ticks() / 1000
         dt  = now - self.last_time
@@ -371,7 +373,7 @@ class GameMenu:
 
 
 
-    # draw everything ──────────────────────────────────────────────────────────
+    # rendering ──────────────────────────────────────────────────────────
     def render(self):
         # blit background image
         self.screen.blit(game_menu_background, (0,0)) # load background image
@@ -391,14 +393,7 @@ class GameMenu:
 
         pygame.display.flip()
     # other functions ──────────────────────────────────────────────────────────
-    # TODO: implement a menu for purchasing managers
-    def save_and_exit(self):
-        SaveStates.save_user(self.user)
-        print("\n (づ｡◕‿‿◕｡)づ Saving user! \n") if DEBUG_MODE else None
-        self.state_manager.set_state(MAIN_MENU) # go back to main menu
-        
-    def save(self):
-        SaveStates.save_user(self.user) # save the user object
+    # nothing yet...
 
 
 # TODO: create shop menu for purchasing managers
