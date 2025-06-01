@@ -94,27 +94,6 @@ class MainMenu:  # —— Main menu screen
             ),
             
         ]
-        icon_size = 60
-        icon_x = 50
-        y_start = 360
-        spacing = 100
-    # TODO: Change initialisation of icons to be inside a dictionary like GameMenu
-        return [
-            CreateFrect(
-                icon_x, y_start + i*spacing,
-                icon_size, icon_size,
-                WHITE,
-                id=icon_id,
-                display=char,
-                font=self.button_font,
-                font_colour=BLACK
-            )
-            for i, (icon_id, char) in enumerate([
-                ("help", "?"),        # top: help
-                ("settings", "√∆"),       # middle: stats (placeholder)
-                ("quit", "∫xdx"),        # bottom: quit
-            ])
-        ]
 
     # callbacks ─────────────────────────────────────────────────────────
     def start_game(self):
@@ -183,11 +162,6 @@ class MainMenu:  # —— Main menu screen
 
 
 class GameMenu:
-    ROW_HEIGHT = 110
-    LEFT_COL_X  = 180
-    RIGHT_COL_X = 680        # two symmetrical columns
-    ICON_SIZE   = 80
-    BAR_W, BAR_H = 320, 60
     MONEY_DISPLAY_TOP_Y = 20
     MONEY_DISPLAY_WIDTH = 300 
     INCOME_DISPLAY_WIDTH = 280 
@@ -195,32 +169,30 @@ class GameMenu:
 
     def __init__(self, screen, user, state_manager):
         self.screen         = screen
+        self.active_panel = None # e.g. shop, unlocks
         self.state_manager  = state_manager
         self.user           = user
+        
         self.title_font   = pygame.font.Font(LOGO_FONT, 60)
         self.subtitle_font= pygame.font.Font(LOGO_FONT, 28)
         self.row_font     = pygame.font.Font(LOGO_FONT, 22)
+        self.time_display_font = pygame.font.Font(LOGO_FONT, 18) # Smaller font for time display
+        
         self.last_time = pygame.time.get_ticks() / 1000  # track for dt
         
+        self.profile_pic = CreateFrect(5, 5, 165, 165, bg_colour=None, id="profile_picture", image=williamdu)
         
         money_display_height = self.title_font.get_height() + 10 # Add some padding
         income_display_height = self.subtitle_font.get_height() + 10 # Add some padding
         income_display_top_y = self.MONEY_DISPLAY_TOP_Y + money_display_height + self.HUD_TEXT_GAP
         
+        self.nav_buttons = self.create_nav_column() # navigation column
+        self.rows = self.create_rows() # generator row creating
+        self.shop_rows = self.build_shop_menu()
         self.hud_elems = {
-            "exit":    Button(SCREEN_WIDTH-80, 20, 60, 60, "EXIT", LIGHT_GRAY, self.subtitle_font, BLACK,
-                              callback=self.save_and_exit
-                              ),
-            "shop":    Button(SCREEN_WIDTH-160, 20, 60, 60, "SHOP", LIGHT_GRAY, self.subtitle_font, BLACK, 
-                              None, 
-                              None
-                              ), # shop not implemented yet
-            "help":    Button(SCREEN_WIDTH-240, 20, 60, 60, "HELP", LIGHT_GRAY, self.subtitle_font, BLACK
-                              ),
-            
             "money_display": CreateFrect(
-                x=(SCREEN_WIDTH - self.MONEY_DISPLAY_WIDTH) // 2,
-                y=self.MONEY_DISPLAY_TOP_Y,
+                x=550,
+                y=20,
                 width=self.MONEY_DISPLAY_WIDTH,
                 height=money_display_height,
                 bg_colour=None,
@@ -229,107 +201,114 @@ class GameMenu:
                 display_callback=lambda: format_large_number(round(self.user.money))
             ),
             "income_display": CreateFrect(
-                x=(SCREEN_WIDTH - self.INCOME_DISPLAY_WIDTH) // 2,
-                y=income_display_top_y,
+                x=550,
+                y=100,
                 width=self.INCOME_DISPLAY_WIDTH,
                 height=income_display_height,
                 bg_colour=None,
                 font=self.subtitle_font,
                 font_colour=WHITE, 
-                display_callback=lambda: f"{format_large_number(round(self.user.income_per_second))}/s"
+                display_callback=lambda: f"{format_large_number(self.user.income_per_second)}/s (revenue per second)"
             )
             
         }
-        self.rows = self.create_rows() # generator row creating
-    """
-    notes
-    bugs ive noted:
-    theres actually a error where the game still calculates generation even on main menu but that is actually an intended feature just not implemented correctly lol
-    display errors exist too
-    
-    """
-        
-    def create_rows(self): # for the generators only
-        """
-        Moved away from the create_button() paradigm where buttons were stored in dictionary for easy callbacks with .click(), instead opting to 
-        have rows implemented instead (mainly because the row feature is extremely important). Now, the class stores the rows of generators as a list in self.rows, and the update and render function
-        loop throw self.rows using a for loop to draw each row.
-        """
-        rows = []
-        idx = 0
-        for g_id, proto in GENERATOR_PROTOTYPES.items():
-            col_x = self.LEFT_COL_X  if idx % 2 == 0 else self.RIGHT_COL_X # alternate columns based on count, e.g. 1 right 2 left 3 right 4 left
-            row_y = 180 + (idx//2) * self.ROW_HEIGHT
-            mproto = MANAGER_PROTOTYPES[g_id]
 
-            # icon (manual generate)
-            icon = CreateFrect(col_x, row_y, self.ICON_SIZE, self.ICON_SIZE,
+        
+    def create_rows(self):
+        rows = [] 
+        idx = 0
+        ROW_HEIGHT = 110
+        ICON_SIZE   = 80
+        BAR_W, BAR_H = 320, 60
+        NAV_BAR_WIDTH = 180
+        CONTENT_WIDTH = SCREEN_WIDTH - NAV_BAR_WIDTH
+        COLUMN_WIDTH = ICON_SIZE + 30 + BAR_W
+        INTER_COLUMN_GAP = 70
+        TOTAL_COLUMNS_WIDTH = 2 * COLUMN_WIDTH + INTER_COLUMN_GAP
+        MARGIN_X = (CONTENT_WIDTH - TOTAL_COLUMNS_WIDTH) // 2
+        LEFT_COL_X = NAV_BAR_WIDTH + MARGIN_X
+        RIGHT_COL_X = LEFT_COL_X + COLUMN_WIDTH + INTER_COLUMN_GAP
+        
+        for g_id, proto in GENERATOR_PROTOTYPES.items():
+            col_x = LEFT_COL_X  if idx % 2 == 0 else RIGHT_COL_X
+            row_y = 180 + (idx//2) * ROW_HEIGHT
+            
+            self.user.ensure_generator(g_id) # Ensure generator exists for display callbacks
+            generator_obj = self.user.generators[g_id]
+
+            icon = CreateFrect(col_x, row_y, ICON_SIZE, ICON_SIZE,
                                WHITE, id=f"icon_{g_id}",
                                font=self.row_font, font_colour=BLACK,
                                display=proto["name"][0]) 
 
-            #‘owned’ pill – sits at icon’s bottom
-            owned = CreateFrect(col_x+15, row_y+self.ICON_SIZE-10, 50, 24,
+            owned = CreateFrect(col_x+15, row_y+ICON_SIZE-10, 50, 24,
                                 LIGHT_GRAY,
                                 font=self.row_font, font_colour=BLACK,
-                                display_callback=lambda gid=g_id:
-                                    f"{self.user.generators.get(gid,Generator(gid,**proto)).amount}")
+                                display_callback=lambda g=generator_obj:
+                                    f"{g.amount}")
 
-            # long bar that shows this generator’s/sec + BUY button 
-            bar_x = col_x + self.ICON_SIZE + 30
-            rev_bar = CreateFrect(bar_x, row_y+10, self.BAR_W, self.BAR_H,
+            bar_x = col_x + ICON_SIZE + 30
+            rev_bar = CreateFrect(bar_x, row_y+10, BAR_W, BAR_H,
                                   WHITE,
                                   font=self.row_font, font_colour=BLACK,
-                                  display_callback=lambda gid=g_id:
-                                      f"{format_large_number(self.user.generators.get(gid,Generator(gid,**proto)).rate)}/s")
+                                  display_callback=lambda g=generator_obj:
+                                      f"{format_large_number(g.cycle_output)} per cycle") # Show cycle output
             
-            
-
-            buy_btn = Button(bar_x+10, row_y+self.ICON_SIZE-14, 180, 32,
+            buy_btn = Button(bar_x+10, row_y+ICON_SIZE-10, 180, 32,
                              "",
                              GRAY, self.row_font, BLACK,
-                             callback=lambda gid=g_id: (
-                                 self.user.ensure_generator(gid),
-                                 self.user.buy_generator(gid)),
-                             display_callback=lambda gid=g_id, pr=proto:
-                                 f"Buy ({format_large_number(self.user.generators.get(gid,Generator(gid,**pr)).next_price)})")
+                             callback=lambda current_gid=g_id: (
+                                 self.user.buy_generator(current_gid)),
+                             display_callback=lambda g=generator_obj:
+                                 f"Buy ({format_large_number(g.next_price)})" # Use next_price from gen obj
+                            )
             
-            buy_manager = Button( #temporary placeholder for manager button, will be moved to the shop menu
-                bar_x+250, row_y+self.ICON_SIZE-14, 50, 32,
-                "", GRAY, DEFAULT_FONT, BLACK,
-                callback=lambda g_id=g_id: ( self.user.buy_manager(g_id) ),
-                display_callback=lambda g_id=g_id, mproto=mproto: (
-                    f"BM"
-                    if g_id in self.user.generators and self.user.generators[g_id].amount > 0
-                    else f"NO MANAGER"
-                )
-            )
+            time_display_y = row_y + ICON_SIZE - 10 # position it to the bottom of the icon
+            time_display_x = bar_x + 200 # Position it to the right of buy button
+            time_display_width = BAR_W - 200 # Adjust width
+            time_display_height = 32
+
+            time_rect = CreateFrect(time_display_x, time_display_y, time_display_width, time_display_height,
+                                    LIGHT_GRAY,
+                                    font=self.time_display_font, font_colour=BLACK,
+                                    display_callback=lambda g=generator_obj, u=self.user: (
+                                        f"{g.time_progress:.1f}s" if g.is_generating else f"{g.get_effective_time(u.generators):.1f}s"
+                                    )
+                                   )
             
-            
-            rows.append(
-                {
+            rows.append({
                 "g_id": g_id,
                 "icon": icon, "owned": owned,
                 "rev": rev_bar, "buy": buy_btn,
-                "buy_manager": buy_manager,
-                    
-                
-                
+                "time_display": time_rect, 
                 }
-                
             )
-            
             idx += 1
         return rows
+    
+    def create_nav_column(self):
+        btns = []
+        start_y = 180
+        spacing = 80
+        items = [
+        ("Managers",  lambda: self.open_panel("shop")),
+        ("Unlocks",   lambda: self.open_panel("upgrades")),
+        ("Settings",  lambda: self.open_panel("settings")),
+        ("Help",      lambda: self.open_panel("help")),
+        ("Exit",      self.save_and_exit),
+        ]
+        for idx, (label, callback) in enumerate(items):
+            btns.append(NavButton(start_y + idx*spacing, label, callback))
+        return btns
     
     # callbacks ──────────────────────────────────────────────────────────
     def save_and_exit(self):
         SaveStates.save_user(self.user)
         print("\n (づ｡◕‿‿◕｡)づ Saving user! \n") if DEBUG_MODE else None
-        self.state_manager.set_state(MAIN_MENU) # go back to main menu
+        self.state_manager.set_state(MAIN_MENU)
         
     def save(self):
-        SaveStates.save_user(self.user) # save the user object
+        SaveStates.save_user(self.user)
 
     # event handling ──────────────────────────────────────────────────────────
     def handle_events(self, events): 
@@ -339,70 +318,122 @@ class GameMenu:
 
             elif e.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
+                
+                for nav_button in self.nav_buttons:
+                    if nav_button.is_hovered(pos):
+                        nav_button.click(); return True
 
-                # HUD exit button
-                if self.hud_elems["exit"].is_hovered(pos): # if the button is hovered
-                    self.hud_elems["exit"].click() # click it by calling the callback function
-
-                # generator rows
                 for r in self.rows:
                     if r["icon"].frect.collidepoint(pos):
                         self.user.manual_generate(r["g_id"])
                     if r["buy"].is_hovered(pos):
                         r["buy"].click()
-                    if r["buy_manager"].is_hovered(pos):
-                        r["buy_manager"].click()
-        return True
+                    # No click action for time_display for now, it's just a display
 
+                for r in self.shop_rows:
+                    if r["btn"].is_hovered(pos):
+                        r["btn"].click()
+        return True
 
     # updates ──────────────────────────────────────────────────────────
     def update(self):
         now = pygame.time.get_ticks() / 1000
         dt  = now - self.last_time
-        self.user.update(dt)
+        self.user.update(dt) # This now calls gen.update() for each generator
         self.last_time = now
 
-        mouse = pygame.mouse.get_pos() # get mouse position
-        for r in self.hud_elems.values(): # loop through key value pairs in the HUD elements dictionary
-            if isinstance(r, Button): # if that element is a button, call its animations
+        mouse = pygame.mouse.get_pos()
+        for r in self.hud_elems.values():
+            if isinstance(r, Button):
                 r.animations(mouse)
         for r in self.rows:
             r["buy"].animations(mouse)
-            r["buy_manager"].animations(mouse)
-
-
-
+            # time_display is CreateFrect, no animations method by default
+        for nav_button in self.nav_buttons:
+            nav_button.animations(mouse)
+        for r in self.shop_rows:
+            r["btn"].animations(mouse)
 
     # rendering ──────────────────────────────────────────────────────────
     def render(self):
-        # blit background image
-        self.screen.blit(game_menu_background, (0,0)) # load background image
+        self.screen.blit(game_menu_background, (0,0))
 
         for element in self.hud_elems.values():
             element.draw(self.screen)
 
-        # screen elements
         for r in self.rows:
             r["icon"].draw(self.screen)
             r["owned"].draw(self.screen)
             r["rev"].draw(self.screen)
             r["buy"].draw(self.screen)
-            r["buy_manager"].draw(self.screen)
-        
-    
-
+            r["time_display"].draw(self.screen) # Draw the new time display
+            
+        self.profile_pic.draw(self.screen)
+        for nav_button in self.nav_buttons:
+            nav_button.draw(self.screen)
+            
+        if self.active_panel == "shop":
+            panel_bg = pygame.Surface((1030, SCREEN_HEIGHT), pygame.SRCALPHA)
+            panel_bg.fill((0,0,0,200))
+            self.screen.blit(panel_bg, (175,0))
+            for r in self.shop_rows:
+                r["name"].draw(self.screen)
+                r["cost"].draw(self.screen)
+                r["btn"].draw(self.screen)
+        elif self.active_panel == "upgrades":
+            self.render_upgrades_panel()    
+            
         pygame.display.flip()
-    # other functions ──────────────────────────────────────────────────────────
-    # nothing yet...
+        
+    # shop menu ──────────────────────────────────────────────────────────
+    def build_shop_menu(self):
+        rows = []
+        y0, row_h = 150, 60
+        for idx, (gid, mproto) in enumerate(MANAGER_PROTOTYPES.items()):
+            y = y0 + idx*row_h
+            name_frect = CreateFrect(
+                220, y, 260, 40, bg_colour=WHITE,
+                font=self.row_font, font_colour=BLACK,
+                display=mproto["name"]
+            )
+            cost_frect = CreateFrect(
+                500, y, 160, 40, bg_colour=WHITE,
+                font=self.row_font, font_colour=BLACK,
+                display_callback=lambda mp=mproto: format_large_number(mp["cost"])
+            )
+            # Ensure generator exists to check if it can be managed, for the 'Owned' or 'Buy' display
+            can_be_managed = gid in self.user.generators and self.user.generators[gid].amount > 0
+            buy_btn = Button(
+                700, y, 120, 40, "Buy", GRAY, self.row_font, BLACK,
+                callback=lambda current_gid=gid: self.user.buy_manager(current_gid),
+                display_callback=lambda current_gid=gid, mp=mproto, um=self.user.managers: (
+                    "Owned" if current_gid in um else (
+                        f"Buy {format_large_number(mp['cost'])}" if (current_gid in self.user.generators and self.user.generators[current_gid].amount > 0) 
+                        else "Locked"
+                    )
+                )
+            )
+            rows.append({"name": name_frect, "cost": cost_frect, "btn": buy_btn})
+        return rows
+    
+    # upgrades panel
+    def render_upgrades_panel(self):
+            panel_bg = pygame.Surface((1030, SCREEN_HEIGHT), pygame.SRCALPHA)
+            panel_bg.fill((0,0,0,200))
+            self.screen.blit(panel_bg, (175,0))
+            y = 140
+            for gid, proto in GENERATOR_PROTOTYPES.items():
+                # Ensure generator exists before trying to access its level
+                self.user.ensure_generator(gid)
+                gen_level = self.user.generators[gid].level
+                text = f"{proto['name']}  –  Lvl {gen_level}"
+                line = self.row_font.render(text, True, WHITE)
+                self.screen.blit(line, (240, y)); y += 40
 
+    def open_panel(self, name):
+        self.active_panel = name if self.active_panel != name else None
 
-# TODO: create shop menu for purchasing managers
-
-    
-    
-    
-    
-class Testing:
+class Testing: # ignore
     def __init__(self, screen, user, state_manager):
         self.screen = screen
         self.state_manager = state_manager
@@ -412,45 +443,41 @@ class Testing:
         self.screen_elements = {
             "money_display": CreateFrect(300, 60, 60, 60, "PINK", id="money_display", font=self.font, font_colour="Black", display_callback=lambda: f"ATAR POINTS: {format_large_number(round(self.user.money))}")
         }
-        self.last_time = pygame.time.get_ticks() / 1000  # track for dt
+        self.last_time = pygame.time.get_ticks() / 1000
 
     def create_buttons(self):
         buttons = []
-
-        # dynamically create 3 columns: Buy Gen, Manual Gen, Hire Manager
         padding_x = 150
         padding_y = 200
         col_width = 450
-        for idx, (generator_id, prototype) in enumerate(GENERATOR_PROTOTYPES.items()): # loop through all the generators
+        for idx, (generator_id, prototype) in enumerate(GENERATOR_PROTOTYPES.items()):
             x = padding_x + (idx * col_width)
-            # 1) Purchase generators
-            # Calculate the price string for the button text
-            price = format_large_number(prototype['base_price'] * (prototype['growth_rate'] ** self.user.generators.get(generator_id, Generator(generator_id, prototype['name'], prototype['base_rate'], prototype['base_price'])).amount)) 
+            self.user.ensure_generator(generator_id) # Ensure gen exists for price display
+            generator_obj = self.user.generators[generator_id]
+            
             buttons.append(Button(
                 x, padding_y + 0*200, BUTTON_WIDTH, BUTTON_HEIGHT,
-                f"Buy {prototype['name']} for {price}",
+                f"Buy {prototype['name']}", # Simplified text
                 GRAY, self.font, BLACK,
-                callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id), self.user.buy_generator(generator_id) ),
-                display_callback=lambda current_gid=generator_id, 
-                current_proto=prototype: f"Buy {current_proto['name']} for {format_large_number(self.user.generators[current_gid].next_price) if current_gid in self.user.generators else format_large_number(current_proto['base_price'])}"
+                callback=lambda gid=generator_id: self.user.buy_generator(gid),
+                display_callback=lambda g=generator_obj:
+                    f"Buy {g.name} for {format_large_number(g.next_price)}"
             ))
-            # 2) Manual Generate
             buttons.append(Button(
                 x, padding_y + 1*60, 100, BUTTON_HEIGHT,
                 f"Gen {prototype['name']}", 
                 YELLOW, self.font, BLACK, 
-                callback=lambda generator_id=generator_id: ( self.user.ensure_generator(generator_id), self.user.generators[generator_id].manual_generate(self.user) )
+                callback=lambda gid=generator_id: self.user.manual_generate(gid)
             ))
-            # 3) Hire Manager
             mproto = MANAGER_PROTOTYPES[generator_id]
             buttons.append(Button( 
                 x, padding_y + 2*60, 100, BUTTON_HEIGHT, 
                 f"Hire {mproto['name']}", YELLOW, self.font, BLACK, 
-                callback=lambda generator_id=generator_id: ( self.user.buy_manager(generator_id) ),
-                display_callback=lambda generator_id=generator_id, mproto=mproto: (
-                    f"Buy {mproto['name']} for {format_large_number(mproto['cost'])}"
-                    if generator_id in self.user.generators and self.user.generators[generator_id].amount > 0
-                    else f"Buy {mproto['name']} for {format_large_number(mproto['cost'])} (Requires {generator_id})"
+                callback=lambda gid=generator_id: self.user.buy_manager(gid),
+                display_callback=lambda current_gid=generator_id, mp=mproto, um=self.user.managers, ug=self.user.generators: (
+                    f"Buy {mp['name']} for {format_large_number(mp['cost'])}" 
+                    if current_gid in ug and ug[current_gid].amount > 0 and current_gid not in um 
+                    else ("Owned" if current_gid in um else f"Need {ug[current_gid].name}")
                 )
             ))
         return buttons
@@ -468,31 +495,25 @@ class Testing:
                         button.click()
         return True
        
-       
-       
     def update(self):
-        # 1) Auto‐production
         now = pygame.time.get_ticks() / 1000
         dt  = now - self.last_time
-        self.user.update(dt)
+        self.user.update(dt) # User update handles generator updates
         self.last_time = now
 
-        # 2) Button hover coloring
         mouse_pos = pygame.mouse.get_pos()
         for btn in self.buttons:
-            btn.colour = DARK_GRAY if btn.is_hovered(mouse_pos) else btn.initial_colour
-       
+            btn.animations(mouse_pos) # Pass mouse_pos to animations
        
     def render(self):
-        self.screen.fill(WHITE)  # Set background colour
-        self.screen.blit(main_menu_background, (-300, 0)) # load background image
+        self.screen.fill(WHITE)
+        self.screen.blit(main_menu_background, (-300, 0))
         
         for button in self.buttons:
             button.draw(self.screen)
         for element in self.screen_elements.values():
             element.draw(self.screen)
         self.screen.blit(williamdu, (600, 600))
-        
         
         pygame.display.flip()
        

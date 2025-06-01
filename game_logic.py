@@ -1,163 +1,253 @@
 from game_constants import *
 
+def apply_upgrades(user, generator_id):
+    """Check thresholds & bump Generator.level.
+
+    Supports per-generator unlocks plus 'global' ones.
+    """
+    # Ensure the generator exists for the user before trying to access it
+    if generator_id not in user.generators:
+        return # Or handle this case as appropriate, e.g., by creating the generator
+    
+    gen = user.generators[generator_id]
+    # per-generator thresholds
+    for thresh, mult in GENERATOR_UPGRADES.get(generator_id, []):
+        if gen.amount >= thresh and gen.level < mult:
+            gen.level = mult
+    # global unlocks - require *every* generator to hit threshold
+    for thresh, mult in GENERATOR_UPGRADES.get("global", []):
+        if all(g.amount >= thresh for g in user.generators.values()):
+            for g in user.generators.values():
+                g.level = max(g.level, mult)
+
+
 class Generator:
-    # TODO: FIX 
-    def __init__(self, id, name, base_rate, base_price, level=1, amount=0, growth_rate=1.07):
-        self.id = id # unique identifier for the generator - constant generators are in game_constants.py
-        self.base_rate = base_rate
+    def __init__(self, id, name, base_rate, base_price, base_time, level=1, amount=0, growth_rate=1.07, time_progress=0.0, is_generating=False):
+        self.id = id
+        self.base_rate = base_rate # rate of money generation per cycle
         self.name = name
-        self.base_price = base_price # base price of the generator
-        self.level = level # multiplier level
-        self.amount = amount # how many you own
-        self.growth_rate = growth_rate # growth rate of the generator, how much the price increases each time you buy one
+        self.base_price = base_price # price of one generator
+        self.base_time = base_time  # Time in seconds for one cycle
+        self.level = level # multiplier for base_rate
+        self.amount = amount # number of generators owned
+        self.growth_rate = growth_rate # multiplier for price
+        self.time_progress = time_progress  # Remaining time for the current cycle
+        self.is_generating = is_generating  # True if currently in a generation cycle
+
+    def get_effective_time(self, all_user_generators):
+        """Calculates the effective time for a generation cycle after milestone reductions."""
+        effective_time = self.base_time
+        
+        # Apply individual generator milestones
+        for milestone in GENERATOR_TIME_MILESTONES:
+            if self.amount >= milestone:
+                effective_time /= 2
+        
+        # Apply global milestones
+        for milestone in GLOBAL_TIME_MILESTONES:
+            if all(g.amount >= milestone for g in all_user_generators.values()):
+                effective_time /= 2
+                
+        return max(MIN_GENERATION_TIME, effective_time) # Ensure time doesn't drop below a minimum for performance purposes
     
-    def manual_generate(self, user): # manually generated money
-        if self.amount == 0: # if you dont own any generators, return 0
-            return 0
-        elif self.id in user.managers: # if you own a manager for that generator, do not generate manually.
-            return 0
-        amount = self.base_rate * self.level * self.amount # base * level * amount
-        user.money += amount
-        return amount # returns the amount of money generated, ill see if I need this or not
+    def start_generation_cycle(self, all_user_generators):
+        """Starts a new generation cycle if not already generating and has amount > 0."""
+        if self.amount > 0 and not self.is_generating:
+            self.time_progress = self.get_effective_time(all_user_generators)
+            self.is_generating = True
+
+    def update(self, dt_seconds, user):
+        """Updates the generator's time progress and handles cycle completion."""
+        if self.is_generating and self.amount > 0:
+            self.time_progress -= dt_seconds
+            if self.time_progress <= 0:
+                money_generated = self.base_rate * self.level * self.amount
+                user.money += money_generated
+                self.is_generating = False # Cycle complete
+                # If managed, automatically restart the cycle
+                if self.id in user.managers:
+                    self.start_generation_cycle(user.generators) # Pass all user generators for milestone checks
     
+    def manual_generate(self, user):
+        """Manually starts a generation cycle for this generator."""
+        if self.amount == 0:
+            return 0
+        # Manual generation starts a cycle, it doesn't bypass the timer
+        # If its already generating (e.g. by manager), manual click does nothing extra for this cycle
+        if not self.is_generating:
+            self.start_generation_cycle(user.generators)
+        return self.base_rate * self.level * self.amount # Return potential amount if ever needed
     
     @property
-    def rate(self): # rate of the generator, how much money it generates per second
+    def cycle_output(self):
+        """Money generated per completed cycle."""
         return self.base_rate * self.amount * self.level
+
+    @property
+    def rate(self):
+        """Effective rate of money generation per second, considering cycle time."""
+        if self.amount == 0:
+            return 0
+        effective_time = self.get_effective_time({}) # Pass empty dict if no access to all generators, or rethink
+        if effective_time == 0: # Avoid division by zero
+             return float('inf') # Or some large number, or handle as an error
+        return self.cycle_output / effective_time
     
     @property
-    def next_price(self): # price of the next generator, increases by 15% each time you buy one. This one is the one shown to the user - the buy() method has this already inline
-        return int(self.base_price * (self.growth_rate ** self.amount)) # price of the next generator, increases by 15% each time you buy one
+    def next_price(self):
+        return int(self.base_price * (self.growth_rate ** self.amount))
     
-    def buy(self, user, quantity=1): # buy a generator, quantity is the amount of generators to buy
+    def buy(self, user, quantity=1):
         a = self.base_price * (self.growth_rate ** self.amount)
         n = quantity
-        # Formula for sum of geometric series: a * (1 - r^n) / (1 - r), where r is the generator's growth rate. actual application of mathematics is crazy
         if self.growth_rate != 1:
             total_cost = int(a * (1 - (self.growth_rate)**n) / (1 - (self.growth_rate)))
         else:
             total_cost = int(a * n)
         if user.money >= total_cost:
             user.money -= total_cost
-            self.amount += quantity # increase the amount of generators owned
-    
-    def to_dict(self): # returns a dictionary of the generator object
+            self.amount += quantity
+            if user:
+                apply_upgrades(user, self.id)
+            # If it's the first purchase and not managed, start the first cycle
+            if self.amount == quantity and not self.is_generating and self.id not in user.managers:
+                self.start_generation_cycle(user.generators)
+
+    def to_dict(self):
         return { 
                 "id": self.id,
                 "level": self.level,
                 "amount": self.amount,
+                "time_progress": self.time_progress,
+                "is_generating": self.is_generating,
                 }
     
     @classmethod
-    def from_dict(cls, data): # creates a generator object from a dictionary, essentially encapsulates the generator object into a dictionary for saving/loading purposes
+    def from_dict(cls, data):
         proto = GENERATOR_PROTOTYPES[data["id"]]
         return cls(
             id=data["id"],
             name=proto["name"],
             base_rate=proto["base_rate"],
             base_price=proto["base_price"],
-            level=data["level"],
-            amount=data["amount"],
-            growth_rate=proto["growth_rate"]
+            base_time=proto["base_time"], 
+            level=data.get("level", 1), # default to 1
+            amount=data.get("amount", 0), # default to 0
+            growth_rate=proto["growth_rate"],
+            time_progress=data.get("time_progress", 0.0), # default to 0.0
+            is_generating=data.get("is_generating", False) # default to False
         )
         
-class Manager: # global manager class
+class Manager:
     def __init__(self, id, name, cost):
         self.id = id
         self.name = name
         self.cost = cost
         
     def buy(self, user):
-        # attempts to hire this manager; deduct cost and register on user
         if user.money >= self.cost:
             user.money -= self.cost
             user.managers[self.id] = self
+            # If the generator is now managed, ensure its cycle starts if it's not already running
+            if self.id in user.generators and user.generators[self.id].amount > 0 and not user.generators[self.id].is_generating:
+                user.generators[self.id].start_generation_cycle(user.generators)
             return True
         return False
 
-    def to_dict(self): # returns a dictionary of the manager object
+    def to_dict(self):
         return { "id": self.id }
     
-    
     @classmethod
-    def from_dict(cls, data): # creates a manager object from a dictionary, essentially encapsulates the manager object into a dictionary for saving/loading purposes
+    def from_dict(cls, data):
         proto = MANAGER_PROTOTYPES[data["id"]]
         return cls(id=data["id"], name=proto["name"], cost=proto["cost"])
         
         
 class User:
-    def __init__(self, money=0):
+    def __init__(self, money=0.0): # float for precision with dt
         self.generators = {}
-        self.money = money
+        self.money = float(money) # double double check that money is float
         self.managers = {} 
         
-    def manual_generate(self, generator_id): # manually generate money from a generator
-        self.ensure_generator(generator_id) # ensure the generator exists in the user object
-        return self.generators[generator_id].manual_generate(self) # call the manual_generate method of the generator
+    def manual_generate(self, generator_id):
+        self.ensure_generator(generator_id)
+        return self.generators[generator_id].manual_generate(self)
     
-    def buy_generator(self, generator_id, quantity=1): # buy a generator, quantity is the amount of generators to buy
-        self.ensure_generator(generator_id) # ensure the generator exists in the user object
-        self.generators[generator_id].buy(self, quantity) # buy the generator(s)
+    def buy_generator(self, generator_id, quantity=1):
+        self.ensure_generator(generator_id)
+        self.generators[generator_id].buy(self, quantity)
         
-    def ensure_generator(self, generator_id): # check if the generator exists in the user object, if not, create it
+    def ensure_generator(self, generator_id):
         if generator_id not in self.generators:
             prototype = GENERATOR_PROTOTYPES[generator_id] 
-            self.generators[generator_id] = Generator( # append generator(s) to the user 
+            self.generators[generator_id] = Generator(
                 id=generator_id,
                 name=prototype["name"],
                 base_rate=prototype["base_rate"],
-                base_price=prototype["base_price"]
+                base_price=prototype["base_price"],
+                base_time=prototype["base_time"]
             )
         
-    def buy_manager(self, manager_id): # buy a manager
+    def buy_manager(self, manager_id):
         if manager_id in self.managers:
             return False
-        if manager_id not in self.generators or self.generators[manager_id].amount == 0: # check if the generator exists in the user object and if you own it
+        if manager_id not in self.generators or self.generators[manager_id].amount == 0:
             return False
-        self.ensure_manager(manager_id)
-        return self.managers[manager_id].buy(self)
-    
-    def ensure_manager(self, manager_id): # check if the manager exists in the user object, if not, create it
-        if manager_id not in self.managers:
-            proto = MANAGER_PROTOTYPES[manager_id]
-            self.managers[manager_id] = Manager(manager_id, proto["name"], proto["cost"])
-
-    def update(self, dt_seconds): # update the user object, called every frame
-        for gen in self.generators.values():
-            if gen.id in self.managers and gen.amount > 0: # 
-                self.money += gen.rate * dt_seconds
+        target_manager_proto = MANAGER_PROTOTYPES[manager_id]
+        target_manager = Manager(manager_id, target_manager_proto["name"], target_manager_proto["cost"])
+        if target_manager.buy(self):
+            # If manager bought, and generator exists and has items, start its cycle if not already running
+            if manager_id in self.generators and self.generators[manager_id].amount > 0 and not self.generators[manager_id].is_generating:
+                 self.generators[manager_id].start_generation_cycle(self.generators)
+            print(f"purchase of {manager_id} was successful") if DEBUG_MODE else None
+            return True
+        else:
+            print(f"purchase of {manager_id} was failed") if DEBUG_MODE else None
+            return False
+        
+    def update(self, dt_seconds):
+        for gen_id, gen in self.generators.items():
+            gen.update(dt_seconds, self) # Call generator's own update method
+            # Manager logic is now handled within Generator.update and Manager.buy
     
     @property 
-    def income_per_second(self): # returns the total income per second of all generators
-        total_income = 0
+    def income_per_second(self):
+        total_income_rate = 0.0
         for gen_id, gen in self.generators.items():
-            if gen_id in self.managers and gen.amount > 0:
-                total_income += gen.rate # only add income per second if manager is purchased
-        return total_income
+            if gen_id in self.managers and gen.amount > 0: # Only count managed generators for passive income
+                # Calculate rate based on cycle output and effective time
+                effective_time = gen.get_effective_time(self.generators)
+                if effective_time > 0: 
+                    total_income_rate += (gen.base_rate * gen.level * gen.amount) / effective_time
+        return total_income_rate
     
-    
-    def to_dict(self): # returns a dictionary of all the users data
+    def to_dict(self):
         return {
             "money": self.money,
             "generators": [generator.to_dict() for generator in self.generators.values()],
             "managers": [manager.to_dict() for manager in self.managers.values()],
         }
         
-    def debug_generators(self):  # new debugging method
+    def debug_generators(self):
         print("---- Debug Generators Info ----")
         for gen_id, generator in self.generators.items():
             manager = self.managers.get(gen_id)
             manager_str = f"Manager: {manager.name}" if manager else "No Manager Assigned"
-            print(f"Generator: {generator.name} | Owned: {generator.amount} | {manager_str}")
+            time_info = f"Time: {generator.time_progress:.2f}s / {generator.get_effective_time(self.generators):.2f}s" if generator.is_generating else f"Time: {generator.get_effective_time(self.generators):.2f}s (Idle)"
+            print(f"Generator: {generator.name} | Owned: {generator.amount} | Level: {generator.level} | {manager_str} | {time_info}")
         print("-------------------------------")
     
     @classmethod
-    def from_dict(cls, data): # creates a user object from a dictionary for saving/loading purposes
-        user = cls(data["money"])
+    def from_dict(cls, data):
+        user = cls(data.get("money", 0.0))
         for generator_data in data.get("generators", []):
             generator = Generator.from_dict(generator_data)
-            user.generators[generator.id] = generator # add the generator to the user object
+            user.generators[generator.id] = generator
         for manager_data in data.get("managers", []):
             manager = Manager.from_dict(manager_data)
             user.managers[manager.id] = manager
+            # After loading, if a generator is managed, ensure its cycle starts if it was saved as not generating
+            # but should be (e.g. if it has amount and is managed)
+            if manager.id in user.generators and user.generators[manager.id].amount > 0 and not user.generators[manager.id].is_generating:
+                user.generators[manager.id].start_generation_cycle(user.generators)
         return user

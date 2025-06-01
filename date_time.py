@@ -1,4 +1,4 @@
-import ntplib
+import ntplib, sys
 from datetime import datetime, timezone
 
 class NTPTimer:
@@ -25,7 +25,13 @@ class NTPTimer:
             datetime: The current time in UTC as provided by the NTP server.
         """
         client = ntplib.NTPClient()  # Create an NTP client instance
-        resp = client.request(self.host, version=3)  # Send a request to the NTP server
+        try:
+            resp = client.request(self.host, version=3)  # Send a request to the NTP server
+        except Exception as E:
+            print("You require a functional internet connection to play!, or some fucking shitty ass error has occred and it doesnat want to fucking start")
+            # sys.exit()
+            print("Using saved time... ")
+            return datetime.fromisoformat("2025-05-31T10:47:42.094985+00:00")
         # resp.tx_time is the time in seconds since the epoch (UTC)
         return datetime.fromtimestamp(resp.tx_time, tz=timezone.utc)
 

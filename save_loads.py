@@ -31,6 +31,7 @@ class SaveStates:
         path = SaveStates.get_path()
         print(f"\n (づ｡◕‿‿◕｡)づ Loading user from file location {path} \n ") if DEBUG_MODE else None 
         with open(path) as f:
+            global data
             data = json.load(f) # load the combined data from a file
         
         user_data = data["user_data"]
@@ -43,8 +44,6 @@ class SaveStates:
         
         path = SaveStates.get_path()
         print(f"\n (づ｡◕‿‿◕｡)づ Loading time from file location {path} \n ") if DEBUG_MODE else None 
-        with open(path) as f:
-            data = json.load(f)
         save_time_str = data.get("save_time") # Get the save time string
         saved_datetime = datetime.fromisoformat(save_time_str) # convert it back to datetime format
         deltatime = timecontroller.get_current_time() - saved_datetime # get the current time and subtract previously saved time

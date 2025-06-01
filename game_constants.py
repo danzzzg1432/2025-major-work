@@ -19,7 +19,6 @@ FONTS_DIR = f"{ASSETS_DIR}/fonts"
 SAVE_DIR = "savestates/save_data.json"
 
 # Colours (RGB values)
-# Colours (RGB values) - organized by color family and brightness
 
 # Blues (light to dark)
 LIGHT_BLUE = (173, 216, 230)
@@ -55,7 +54,7 @@ DARK_PURPLE = (75, 0, 130)
 # Browns (light to dark)
 BEIGE = (245, 245, 220)
 TAN = (210, 180, 140)
-BROWN = (165, 42, 42)
+BROWN = (150, 75, 0)
 DARK_BROWN = (101, 67, 33)
 
 # Grayscale (light to dark)
@@ -80,7 +79,7 @@ STARTING_MONEY = 10
 # Font Settings
 MAIN_MENU_LOGO_SIZE = 90
 MAIN_MENU_BUTTON_SIZE = 25
-LOGO_FONT = f"{FONTS_DIR}/quicksand_variable.ttf"
+LOGO_FONT = f"{FONTS_DIR}/tabitha.ttf"
 DEFAULT_FONT = pygame.font.Font(LOGO_FONT, MAIN_MENU_BUTTON_SIZE)
 
 
@@ -92,7 +91,6 @@ SAVE_FILE_NAME = "save_data.json"
 MAIN_MENU = "main_menu"
 GAME_MENU = "game_menu"
 # SETTINGS_MENU = "settings_menu"
-# SHOP_MENU = "shop_menu"
 # LOGIN_MENU = "login_menu"
 # REGISTER_MENU = "register_menu"
 # HELP_MENU = "help_menu"
@@ -107,7 +105,7 @@ def load_image(image_path, scale=None):
         image = pygame.transform.scale(image, scale)
     return image
 
-williamdu = load_image(f"{IMAGES_DIR}/williamdu.png", (300, 300))
+williamdu = load_image(f"{IMAGES_DIR}/williamdu.png", (165, 165))
 main_menu_background = load_image(f"{IMAGES_DIR}/ittmainmenu.png")
 idle_tutor_tycoon_logo = load_image(f"{IMAGES_DIR}/itt_logo.png")
 game_menu_background = load_image(f"{IMAGES_DIR}/ittgamebackground.png")
@@ -115,20 +113,50 @@ game_menu_background = load_image(f"{IMAGES_DIR}/ittgamebackground.png")
 # Generator prototypes
 GENERATOR_PROTOTYPES = {
     # id: { name, base_rate (points/sec), base_price (initial cost), growth_rate (cost multiplier) }
-    "student":   { "name": "Student", "base_rate": 1,   "base_price": 3.738, "growth_rate": 1.07 },
-    "high_performance_student": { "name": "High Performance Student", "base_rate": 60,   "base_price": 60, "growth_rate": 1.15  },
-    "tutor":  { "name": "Professor", "base_rate": 720,  "base_price": 540, "growth_rate": 1.14 },
-    "anandhasundram_parameswaran": { "name": "The Math God Mr Param", "base_rate": 4320, "base_price": 8640, "growth_rate": 1.13 },
-    "dilliam_wu": { "name": "Dr Wu", "base_rate": 51840, "base_price": 103680, "growth_rate": 1.12 },
+    "student":   { "name": "Student", "base_rate": 1,   "base_price": 3.738, "growth_rate": 1.07, "base_time": 0.6 },
+    "high_performance_student": { "name": "High Performance Student", "base_rate": 60,   "base_price": 60, "growth_rate": 1.15, "base_time": 3.0 },
+    "tutor":  { "name": "Professor", "base_rate": 720,  "base_price": 540, "growth_rate": 1.14, "base_time": 6.0 },
+    "anandhasundram_parameswaran": { "name": "The Math God Mr Param", "base_rate": 4320, "base_price": 8640, "growth_rate": 1.13, "base_time": 12.0 },
+    "dilliam_wu": { "name": "Dr Wu", "base_rate": 51840, "base_price": 103680, "growth_rate": 1.12, "base_time": 24.0 },
+    "achintya_kothapalli": { "name": "SM", "base_rate": 622080, "base_price": 1244160, "growth_rate": 1.11, "base_time": 96.0},
+    "p1": { "name": "p1", "base_rate": 7464960, "base_price": 14929920, "growth_rate": 1.10, "base_time": 384.0},
+    "p2": { "name": "p2", "base_rate": 89579520, "base_price": 179159040, "growth_rate": 1.09, "base_time": 1536.0},
+    "p3": { "name": "p3", "base_rate": 2149908480, "base_price": 1074954240, "growth_rate": 1.08, "base_time": 6144.0},
+    "p4": { "name": "p4", "base_rate": 29668737024, "base_price": 25798901760, "growth_rate": 1.07, "base_time": 36864.0},
     
 }
 
 # Manager prototypes
 MANAGER_PROTOTYPES = {
     # same keys as GENERATOR_PROTOTYPES 
-    "student":  { "name": "Student Leader",  "cost":  100   },
-    "high_performance_student":     { "name": "Rank 1 Committee",     "cost":  1000  },
-    "tutor": { "name": "Tutor manager", "cost": 10000  },
-    "anandhasundram_parameswaran": { "name": "His Kookaburra", "cost": 100000 },
-    "dilliam_wu": { "name": "Wu's Assistant", "cost": 10000000 },
+    "student":  { "name": "Student Leader",  "cost":  1000   },
+    "high_performance_student":     { "name": "Rank 1 Committee",     "cost":  15000  },
+    "tutor": { "name": "Tutor manager", "cost": 100000  },
+    "anandhasundram_parameswaran": { "name": "His Kookaburra", "cost": 500000 },
+    "dilliam_wu": { "name": "Wu's Assistant", "cost": 1200000 },
+    "achintya_kothapalli": { "name" :"SM22922", "cost": 10000000 },
+    "p1": { "name" :"p1", "cost": 111111111 },
+    "p2": { "name" :"p2", "cost": 555555555 },
+    "p3": { "name" :"p3", "cost": 10000000000 },
+    "p4": { "name" :"p4", "cost": 100000000000 },
 }
+
+GENERATOR_UPGRADES = {
+    "student":   [(25, 2), (50, 4), (100, 8)],
+    "high_performance_student": [(25, 2), (50, 4), (100, 8)],
+    "tutor": [(25, 2), (50, 4), (100, 8)],
+    "anandhasundram_parameswaran": [(25, 2), (50, 4), (100, 8)],
+    "dilliam_wu": [(25, 2), (50, 4), (100, 8)],
+    "achintya_kothapalli": [(25, 2), (50, 4), (100, 8)],
+    "p1":[(25, 2), (50, 4), (100, 8)],
+    "p2":[(25, 2), (50, 4), (100, 8)],
+    "p3":[(25, 2), (50, 4), (100, 8)],
+    "p4":[(25, 2), (50, 4), (100, 8)],
+    "global":    [(25, 2), (50, 4), (100, 8)]
+    
+}
+
+# Time-based generation milestones
+GENERATOR_TIME_MILESTONES = [25, 50, 100, 200, 300, 400] # Reduces time for specific generator
+GLOBAL_TIME_MILESTONES = [25, 50, 100, 200, 300, 400]    # Reduces time for ALL generators if all meet count
+MIN_GENERATION_TIME = 0.01 # Minimum time a cycle can take after all reductions

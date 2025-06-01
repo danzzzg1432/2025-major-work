@@ -15,10 +15,10 @@ def format_large_number(num):
     formatted_num = f"{num:.3f}".rstrip('0').rstrip('.')
     
     # Return formatted number with appropriate suffix
-    suffixes = ["", "K", "MILLION", "BILLION", "TRILLION", "QUADRILLION", 
-                "QUINTILLION", "SEXTILLION", "SEPTILLION", "OCTILLION", "NONILLION", "DECILLION", "UNDECILLION", 
-                "DUODECILLION", "TREDECILLION", "QUATTUORDECILLION", "QUINDECILLION", "SEXDECILLION", "SEPTENDECILLION", 
-                "OCTODECILLION", "NOVEMDECILLION", "VIGINTILLION"]
+    suffixes = ["", "K", "M", "B", "T", "Qa", 
+                "Qi", "Sx", "Sp", "Oc", "No", "Dc", "Ud", 
+                "Dd", "Td", "Qad", "Qid", "Sxd", "Spd", 
+                "Ocd", "Nod", "Vg"]
     
     if magnitude < len(suffixes):
         return f"{formatted_num} {suffixes[magnitude]}" # if the number has a pretty suffix, return it with the suffix

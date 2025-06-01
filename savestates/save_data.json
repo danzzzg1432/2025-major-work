@@ -1,21 +1,76 @@
 {
     "user_data": {
-        "money": 19347.87251799996,
+        "money": 1.0115802230548e+19,
         "generators": [
             {
                 "id": "student",
-                "level": 1,
-                "amount": 1
+                "level": 8,
+                "amount": 412,
+                "time_progress": 0.01,
+                "is_generating": true
             },
             {
                 "id": "high_performance_student",
-                "level": 1,
-                "amount": 1
+                "level": 4,
+                "amount": 55,
+                "time_progress": 0.1875,
+                "is_generating": true
             },
             {
                 "id": "tutor",
-                "level": 1,
-                "amount": 1
+                "level": 8,
+                "amount": 192,
+                "time_progress": 0.1875,
+                "is_generating": true
+            },
+            {
+                "id": "anandhasundram_parameswaran",
+                "level": 8,
+                "amount": 148,
+                "time_progress": 0.375,
+                "is_generating": true
+            },
+            {
+                "id": "dilliam_wu",
+                "level": 8,
+                "amount": 100,
+                "time_progress": 0.4230000000000018,
+                "is_generating": true
+            },
+            {
+                "id": "achintya_kothapalli",
+                "level": 8,
+                "amount": 100,
+                "time_progress": 0.5130000000000052,
+                "is_generating": true
+            },
+            {
+                "id": "p1",
+                "level": 8,
+                "amount": 102,
+                "time_progress": 5.224999999999994,
+                "is_generating": true
+            },
+            {
+                "id": "p2",
+                "level": 8,
+                "amount": 323,
+                "time_progress": 5.111999999999995,
+                "is_generating": true
+            },
+            {
+                "id": "p3",
+                "level": 4,
+                "amount": 50,
+                "time_progress": 137.74451358034509,
+                "is_generating": true
+            },
+            {
+                "id": "p4",
+                "level": 8,
+                "amount": 294,
+                "time_progress": 779.7445135798729,
+                "is_generating": true
             }
         ],
         "managers": [
@@ -27,8 +82,29 @@
             },
             {
                 "id": "tutor"
+            },
+            {
+                "id": "anandhasundram_parameswaran"
+            },
+            {
+                "id": "dilliam_wu"
+            },
+            {
+                "id": "p2"
+            },
+            {
+                "id": "p1"
+            },
+            {
+                "id": "achintya_kothapalli"
+            },
+            {
+                "id": "p4"
+            },
+            {
+                "id": "p3"
             }
         ]
     },
-    "save_time": "2025-05-25T05:08:20.849626+00:00"
+    "save_time": "2025-06-01T04:50:02.449997+00:00"
 }
