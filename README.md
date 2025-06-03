@@ -1,10 +1,7 @@
-# 2025-major-work
-HSC Software Engineering Major Work - Daniel Guo
+# 2025 Major Work
+HSC Software Engineering Major Work
 
-### Website:
-
-### Video:
-
+Daniel G
 
 
 
