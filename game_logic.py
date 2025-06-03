@@ -1,24 +1,27 @@
 from game_constants import *
 
-def apply_upgrades(user, generator_id):
-    """Check thresholds & bump Generator.level.
-
-    Supports per-generator unlocks plus 'global' ones.
+def apply_upgrades(user, generator_id_that_triggered_check):
     """
-    # Ensure the generator exists for the user before trying to access it
-    if generator_id not in user.generators:
-        return # Or handle this case as appropriate, e.g., by creating the generator
-    
-    gen = user.generators[generator_id]
-    # per-generator thresholds
-    for thresh, mult in GENERATOR_UPGRADES.get(generator_id, []):
-        if gen.amount >= thresh and gen.level < mult:
-            gen.level = mult
-    # global unlocks - require *every* generator to hit threshold
-    for thresh, mult in GENERATOR_UPGRADES.get("global", []):
-        if all(g.amount >= thresh for g in user.generators.values()):
-            for g in user.generators.values():
-                g.level = max(g.level, mult)
+    Calculates and updates levels for ALL generators based on their specific
+    and the current global upgrade tiers with stacking multipliers
+    """
+
+    highest_achieved_global_multiplier = 1  # Start with base multiplier of 1
+    for thresh_global, mult_global in GENERATOR_UPGRADES.get("global", []):
+        if all(g.amount >= thresh_global for g in user.generators.values()):
+            highest_achieved_global_multiplier = max(highest_achieved_global_multiplier, mult_global)
+
+    # Update each generator's level based on its specific upgrades and the global multiplier
+    for gen_id, gen_obj in user.generators.items():
+        # Determine the highest applicable specific multiplier for this generator
+        specific_multiplier_for_this_gen = 1  
+        for thresh_specific, mult_specific in GENERATOR_UPGRADES.get(gen_id, []):
+            if gen_obj.amount >= thresh_specific:
+                specific_multiplier_for_this_gen = max(specific_multiplier_for_this_gen, mult_specific)
+        
+        # The final level is the product of the specific and global multipliers.
+        new_level = specific_multiplier_for_this_gen * highest_achieved_global_multiplier
+        gen_obj.level = new_level
 
 
 class Generator:

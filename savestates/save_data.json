@@ -1,110 +1,98 @@
 {
     "user_data": {
-        "money": 1.0115802230548e+19,
+        "money": 2.242341739390296e+20,
         "generators": [
             {
-                "id": "student",
-                "level": 8,
-                "amount": 412,
-                "time_progress": 0.01,
+                "id": "g1",
+                "level": 16,
+                "amount": 65,
+                "time_progress": 0.0375,
                 "is_generating": true
             },
             {
-                "id": "high_performance_student",
-                "level": 4,
-                "amount": 55,
-                "time_progress": 0.1875,
-                "is_generating": true
-            },
-            {
-                "id": "tutor",
-                "level": 8,
-                "amount": 192,
-                "time_progress": 0.1875,
-                "is_generating": true
-            },
-            {
-                "id": "anandhasundram_parameswaran",
-                "level": 8,
-                "amount": 148,
-                "time_progress": 0.375,
-                "is_generating": true
-            },
-            {
-                "id": "dilliam_wu",
-                "level": 8,
-                "amount": 100,
-                "time_progress": 0.4230000000000018,
-                "is_generating": true
-            },
-            {
-                "id": "achintya_kothapalli",
-                "level": 8,
-                "amount": 100,
-                "time_progress": 0.5130000000000052,
-                "is_generating": true
-            },
-            {
-                "id": "p1",
-                "level": 8,
-                "amount": 102,
-                "time_progress": 5.224999999999994,
-                "is_generating": true
-            },
-            {
-                "id": "p2",
-                "level": 8,
-                "amount": 323,
-                "time_progress": 5.111999999999995,
-                "is_generating": true
-            },
-            {
-                "id": "p3",
-                "level": 4,
+                "id": "g2",
+                "level": 16,
                 "amount": 50,
-                "time_progress": 137.74451358034509,
+                "time_progress": -0.004000000000019099,
+                "is_generating": false
+            },
+            {
+                "id": "g3",
+                "level": 16,
+                "amount": 50,
+                "time_progress": -0.006999999999997897,
+                "is_generating": false
+            },
+            {
+                "id": "g4",
+                "level": 16,
+                "amount": 50,
+                "time_progress": -0.012999999999998124,
+                "is_generating": false
+            },
+            {
+                "id": "g5",
+                "level": 16,
+                "amount": 50,
+                "time_progress": 1.5,
                 "is_generating": true
             },
             {
-                "id": "p4",
-                "level": 8,
-                "amount": 294,
-                "time_progress": 779.7445135798729,
+                "id": "g6",
+                "level": 16,
+                "amount": 50,
+                "time_progress": -0.010999999999967258,
+                "is_generating": false
+            },
+            {
+                "id": "g7",
+                "level": 16,
+                "amount": 50,
+                "time_progress": 112.02700000000598,
+                "is_generating": true
+            },
+            {
+                "id": "g8",
+                "level": 16,
+                "amount": 90,
+                "time_progress": 2.7480650000141225,
+                "is_generating": true
+            },
+            {
+                "id": "g9",
+                "level": 16,
+                "amount": 50,
+                "time_progress": 4099.49104301028,
+                "is_generating": true
+            },
+            {
+                "id": "g0",
+                "level": 16,
+                "amount": 91,
+                "time_progress": 32231.47764906913,
                 "is_generating": true
             }
         ],
         "managers": [
             {
-                "id": "student"
+                "id": "g9"
             },
             {
-                "id": "high_performance_student"
+                "id": "g5"
             },
             {
-                "id": "tutor"
+                "id": "g0"
             },
             {
-                "id": "anandhasundram_parameswaran"
+                "id": "g8"
             },
             {
-                "id": "dilliam_wu"
+                "id": "g1"
             },
             {
-                "id": "p2"
-            },
-            {
-                "id": "p1"
-            },
-            {
-                "id": "achintya_kothapalli"
-            },
-            {
-                "id": "p4"
-            },
-            {
-                "id": "p3"
+                "id": "g7"
             }
         ]
     },
-    "save_time": "2025-06-01T04:50:02.449997+00:00"
+    "save_time": "2025-05-31T10:47:42.094985+00:00"
 }

@@ -5,7 +5,7 @@ from ui_elements import *
 from save_loads import *
 
 from utils import format_large_number
-
+import emoji
 
 
 
@@ -66,7 +66,7 @@ class MainMenu:  # —— Main menu screen
             Button( # enter game button
                 main_x, 360, BUTTON_WIDTH, BUTTON_HEIGHT,
                 "Enter Game", GRAY, self.button_font, BLACK,
-                callback=self.start_game
+                callback=self.start_game, border_radius=15
             ),
             # Button( # settings button
             #     main_x, 440, BUTTON_WIDTH, BUTTON_HEIGHT,
@@ -79,19 +79,19 @@ class MainMenu:  # —— Main menu screen
         
         return [
             Button( # quit button
-                50, 360, 60, 60, "quit", GRAY, self.button_font, 
-                BLACK, callback=self.quit_game
+                50, 360, 80, 60, "X Quit", GRAY, self.button_font, 
+                BLACK, callback=self.quit_game, border_radius=15
             ),
             
             Button( # help button
-                50, 460, 60, 60, "❔", GRAY, self.button_font,
-                BLACK, callback=self.show_help
+                50, 460, 80, 60, "? Help", GRAY, self.button_font,
+                BLACK, callback=self.show_help, border_radius=15
             ),
             
-            Button( # settings button
-                   50, 560, 60, 60, "⚙️", GRAY, self.button_font,
-                BLACK, callback=self.open_settings
-            ),
+            # Button( # settings button
+            #        50, 560, 60, 60, emoji.emojize(":gear:"), GRAY, pygame.font.Font(None),
+            #     BLACK, callback=self.open_settings
+            # ),
             
         ]
 
@@ -293,7 +293,7 @@ class GameMenu:
         items = [
         ("Managers",  lambda: self.open_panel("shop")),
         ("Unlocks",   lambda: self.open_panel("upgrades")),
-        ("Settings",  lambda: self.open_panel("settings")),
+        # ("Settings",  lambda: self.open_panel("settings")),
         ("Help",      lambda: self.open_panel("help")),
         ("Exit",      self.save_and_exit),
         ]
@@ -416,7 +416,7 @@ class GameMenu:
             rows.append({"name": name_frect, "cost": cost_frect, "btn": buy_btn})
         return rows
     
-    # upgrades panel
+    # upgrades menu ──────────────────────────────────────────────────────────
     def render_upgrades_panel(self):
             panel_bg = pygame.Surface((1030, SCREEN_HEIGHT), pygame.SRCALPHA)
             panel_bg.fill((0,0,0,200))
@@ -426,9 +426,9 @@ class GameMenu:
                 # Ensure generator exists before trying to access its level
                 self.user.ensure_generator(gid)
                 gen_level = self.user.generators[gid].level
-                text = f"{proto['name']}  –  Lvl {gen_level}"
+                text = f"{proto['name']} - Multiplier: {gen_level}"
                 line = self.row_font.render(text, True, WHITE)
-                self.screen.blit(line, (240, y)); y += 40
+                self.screen.blit(line, (240, y)); y += 55
 
     def open_panel(self, name):
         self.active_panel = name if self.active_panel != name else None

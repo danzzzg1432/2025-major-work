@@ -113,50 +113,49 @@ game_menu_background = load_image(f"{IMAGES_DIR}/ittgamebackground.png")
 # Generator prototypes
 GENERATOR_PROTOTYPES = {
     # id: { name, base_rate (points/sec), base_price (initial cost), growth_rate (cost multiplier) }
-    "student":   { "name": "Student", "base_rate": 1,   "base_price": 3.738, "growth_rate": 1.07, "base_time": 0.6 },
-    "high_performance_student": { "name": "High Performance Student", "base_rate": 60,   "base_price": 60, "growth_rate": 1.15, "base_time": 3.0 },
-    "tutor":  { "name": "Professor", "base_rate": 720,  "base_price": 540, "growth_rate": 1.14, "base_time": 6.0 },
-    "anandhasundram_parameswaran": { "name": "The Math God Mr Param", "base_rate": 4320, "base_price": 8640, "growth_rate": 1.13, "base_time": 12.0 },
-    "dilliam_wu": { "name": "Dr Wu", "base_rate": 51840, "base_price": 103680, "growth_rate": 1.12, "base_time": 24.0 },
-    "achintya_kothapalli": { "name": "SM", "base_rate": 622080, "base_price": 1244160, "growth_rate": 1.11, "base_time": 96.0},
-    "p1": { "name": "p1", "base_rate": 7464960, "base_price": 14929920, "growth_rate": 1.10, "base_time": 384.0},
-    "p2": { "name": "p2", "base_rate": 89579520, "base_price": 179159040, "growth_rate": 1.09, "base_time": 1536.0},
-    "p3": { "name": "p3", "base_rate": 2149908480, "base_price": 1074954240, "growth_rate": 1.08, "base_time": 6144.0},
-    "p4": { "name": "p4", "base_rate": 29668737024, "base_price": 25798901760, "growth_rate": 1.07, "base_time": 36864.0},
+    "g1":   { "name": "5.3 Math Student", "base_rate": 1,   "base_price": 3.738, "growth_rate": 1.07, "base_time": 0.6 },
+    "g2": { "name": "4U Student", "base_rate": 60,   "base_price": 60, "growth_rate": 1.15, "base_time": 3.0 },
+    "g3":  { "name": "Terry Bong", "base_rate": 720,  "base_price": 540, "growth_rate": 1.14, "base_time": 6.0 },
+    "g4": { "name": "Math Messiah, Andy Param", "base_rate": 4320, "base_price": 8640, "growth_rate": 1.13, "base_time": 12.0 },
+    "g5": { "name": "Eddie Wu", "base_rate": 51840, "base_price": 103680, "growth_rate": 1.12, "base_time": 24.0 },
+    "g6": { "name": "SM", "base_rate": 622080, "base_price": 1244160, "growth_rate": 1.11, "base_time": 96.0},
+    "g7": { "name": "Dilliam Wu", "base_rate": 7464960, "base_price": 14929920, "growth_rate": 1.10, "base_time": 384.0},
+    "g8": { "name": "buSTATIONARY", "base_rate": 89579520, "base_price": 179159040, "growth_rate": 1.09, "base_time": 1536.0},
+    "g9": { "name": "English Advanced", "base_rate": 2149908480, "base_price": 1074954240, "growth_rate": 1.08, "base_time": 6144.0},
+    "g0": { "name": "SR 1", "base_rate": 29668737024, "base_price": 25798901760, "growth_rate": 1.07, "base_time": 36864.0},
     
 }
 
 # Manager prototypes
 MANAGER_PROTOTYPES = {
     # same keys as GENERATOR_PROTOTYPES 
-    "student":  { "name": "Student Leader",  "cost":  1000   },
-    "high_performance_student":     { "name": "Rank 1 Committee",     "cost":  15000  },
-    "tutor": { "name": "Tutor manager", "cost": 100000  },
-    "anandhasundram_parameswaran": { "name": "His Kookaburra", "cost": 500000 },
-    "dilliam_wu": { "name": "Wu's Assistant", "cost": 1200000 },
-    "achintya_kothapalli": { "name" :"SM22922", "cost": 10000000 },
-    "p1": { "name" :"p1", "cost": 111111111 },
-    "p2": { "name" :"p2", "cost": 555555555 },
-    "p3": { "name" :"p3", "cost": 10000000000 },
-    "p4": { "name" :"p4", "cost": 100000000000 },
+    "g1":  { "name": "Mr Booey",  "cost":  1000   },
+    "g2":     { "name": "Question 16",     "cost":  15000  },
+    "g3": { "name": "Germanic Baguette Guy", "cost": 100000  },
+    "g4": { "name": "Non suspicious kookaburra", "cost": 500000 },
+    "g5": { "name": "Wu's Dad", "cost": 1200000 },
+    "g6": { "name" :"Hw Copier (not)", "cost": 10000000 },
+    "g7": { "name" :"Dames Ju", "cost": 111111111 },
+    "g8": { "name" :"Ko", "cost": 555555555 },
+    "g9": { "name" :"Useless", "cost": 10000000000 },
+    "g0": { "name" :"You", "cost": 100000000000 },
 }
 
 GENERATOR_UPGRADES = {
-    "student":   [(25, 2), (50, 4), (100, 8)],
-    "high_performance_student": [(25, 2), (50, 4), (100, 8)],
-    "tutor": [(25, 2), (50, 4), (100, 8)],
-    "anandhasundram_parameswaran": [(25, 2), (50, 4), (100, 8)],
-    "dilliam_wu": [(25, 2), (50, 4), (100, 8)],
-    "achintya_kothapalli": [(25, 2), (50, 4), (100, 8)],
-    "p1":[(25, 2), (50, 4), (100, 8)],
-    "p2":[(25, 2), (50, 4), (100, 8)],
-    "p3":[(25, 2), (50, 4), (100, 8)],
-    "p4":[(25, 2), (50, 4), (100, 8)],
-    "global":    [(25, 2), (50, 4), (100, 8)]
-    
+    "g1":   [(25, 2), (50, 4), (100, 8), (200, 16), (300, 32), (400, 64), (500, 128), (600, 256), (700, 512), (800, 1024), (900, 2048), (1000, 4096)],
+    "g2": [(25, 2), (50, 4), (100, 8), (200, 16), (300, 32), (400, 64), (500, 128), (600, 256), (700, 512), (800, 1024), (900, 2048), (1000, 4096)],
+    "g3": [(25, 2), (50, 4), (100, 8), (200, 16), (300, 32), (400, 64), (500, 128), (600, 256), (700, 512), (800, 1024), (900, 2048), (1000, 4096)],
+    "g4": [(25, 2), (50, 4), (100, 8), (200, 16), (300, 32), (400, 64), (500, 128), (600, 256), (700, 512), (800, 1024), (900, 2048), (1000, 4096)],
+    "g5": [(25, 2), (50, 4), (100, 8), (200, 16), (300, 32), (400, 64), (500, 128), (600, 256), (700, 512), (800, 1024), (900, 2048), (1000, 4096)],
+    "g6": [(25, 2), (50, 4), (100, 8), (200, 16), (300, 32), (400, 64), (500, 128), (600, 256), (700, 512), (800, 1024), (900, 2048), (1000, 4096)],
+    "g7": [(25, 2), (50, 4), (100, 8), (200, 16), (300, 32), (400, 64), (500, 128), (600, 256), (700, 512), (800, 1024), (900, 2048), (1000, 4096)],
+    "g8": [(25, 2), (50, 4), (100, 8), (200, 16), (300, 32), (400, 64), (500, 128), (600, 256), (700, 512), (800, 1024), (900, 2048), (1000, 4096)],
+    "g9": [(25, 2), (50, 4), (100, 8), (200, 16), (300, 32), (400, 64), (500, 128), (600, 256), (700, 512), (800, 1024), (900, 2048), (1000, 4096)],
+    "g0": [(25, 2), (50, 4), (100, 8), (200, 16), (300, 32), (400, 64), (500, 128), (600, 256), (700, 512), (800, 1024), (900, 2048), (1000, 4096)],
+    "global": [(25, 2), (50, 4), (100, 8), (200, 16), (300, 32), (400, 64), (500, 128), (600, 256), (700, 512), (800, 1024), (900, 2048), (1000, 4096)]
 }
 
 # Time-based generation milestones
-GENERATOR_TIME_MILESTONES = [25, 50, 100, 200, 300, 400] # Reduces time for specific generator
-GLOBAL_TIME_MILESTONES = [25, 50, 100, 200, 300, 400]    # Reduces time for ALL generators if all meet count
+GENERATOR_TIME_MILESTONES = [25, 50, 100, 200, 300, 400, 600, 1000] # Reduces time for specific generator
+GLOBAL_TIME_MILESTONES = [25, 50, 100, 200, 300, 400, 600, 1000]    # Reduces time for ALL generators if all meet count
 MIN_GENERATION_TIME = 0.01 # Minimum time a cycle can take after all reductions
