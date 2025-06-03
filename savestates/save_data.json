@@ -1,12 +1,12 @@
 {
     "user_data": {
-        "money": 2.242341739390296e+20,
+        "money": 2.242456270346505e+20,
         "generators": [
             {
                 "id": "g1",
                 "level": 16,
                 "amount": 65,
-                "time_progress": 0.0375,
+                "time_progress": 0.009952999994857235,
                 "is_generating": true
             },
             {
@@ -34,7 +34,7 @@
                 "id": "g5",
                 "level": 16,
                 "amount": 50,
-                "time_progress": 1.5,
+                "time_progress": 1.2099530000123195,
                 "is_generating": true
             },
             {
@@ -48,28 +48,28 @@
                 "id": "g7",
                 "level": 16,
                 "amount": 50,
-                "time_progress": 112.02700000000598,
+                "time_progress": 15.736953000014182,
                 "is_generating": true
             },
             {
                 "id": "g8",
                 "level": 16,
                 "amount": 90,
-                "time_progress": 2.7480650000141225,
+                "time_progress": 2.458018000033917,
                 "is_generating": true
             },
             {
                 "id": "g9",
                 "level": 16,
                 "amount": 50,
-                "time_progress": 4099.49104301028,
+                "time_progress": 355.20099601030233,
                 "is_generating": true
             },
             {
                 "id": "g0",
                 "level": 16,
                 "amount": 91,
-                "time_progress": 32231.47764906913,
+                "time_progress": 1991.1876020691416,
                 "is_generating": true
             }
         ],
@@ -94,5 +94,5 @@
             }
         ]
     },
-    "save_time": "2025-05-31T10:47:42.094985+00:00"
+    "save_time": "2025-06-03T06:04:31.607432+00:00"
 }
