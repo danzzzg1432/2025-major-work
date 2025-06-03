@@ -1,6 +1,7 @@
-# 2025-major-work
+# 2025 Major Work
 HSC Software Engineering Major Work
 
+Daniel G
 
 
 
