@@ -1,15 +1,17 @@
 import pygame
 
-from game_constants import *  
+from game_constants import *  # Import game constants
 from game_logic import *  # Import game logic classes
 from ui_elements import *  # Import UI classes
 from game_states import *  # Import game states
 from save_loads import *  # Import save/load functions
+from utils import Music # Import the new Music class
 
-import sys
+# Import sys and time
+import sys 
 import time
 
-# Initialise pygame, sound control and screen
+# Initialise PyGame, sound control and screen
 pygame.init()
 pygame.mixer.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
@@ -24,16 +26,17 @@ try: # Load user data from save file
     time_elapsed_offline = SaveStates.time_elapsed()
     print(f"\nTime elapsed when loading user {time_elapsed_offline}") if DEBUG_MODE else None
     
-    # First, give a lump sum based on the income_per_second at the moment of saving.
-    # This is a quick approximation.
-    offline_generated_money_estimate = user.income_per_second * time_elapsed_offline 
-    user.money += offline_generated_money_estimate
-    print(f"\nOffline generated money (estimated based on saved income/sec) = ${offline_generated_money_estimate} ") if DEBUG_MODE else None
+    # QUICK LUMP SUMP ESTIMATE OF OFFLINE MONEY GENERATED
+    # Quick Approximation
+    # offline_generated_money_estimate = user.income_per_second * time_elapsed_offline 
+    # user.money += offline_generated_money_estimate
+    # print(f"\nOffline generated money (estimated based on saved income/sec) = ${offline_generated_money_estimate} ") if DEBUG_MODE else None
 
     # More accurate offline progress: Simulate cycles for each generator.
     # This will add any additional money from completed cycles not covered by the estimate.
     # Note: The previous estimate might slightly overpay if income_per_second decreased due to milestone changes during offline time, 
     # but this simulation correctly processes cycles based on their state when saved.
+    lets_see = 0
     for gen_id, gen in user.generators.items():
         if gen.amount > 0 and (gen.is_generating or gen.id in user.managers):
             remaining_offline_time_for_gen = time_elapsed_offline
@@ -42,6 +45,7 @@ try: # Load user data from save file
             if gen.is_generating: # Cycle was in progress
                 if gen.time_progress <= remaining_offline_time_for_gen:
                     user.money += gen.cycle_output # Add money for this completed cycle
+                    lets_see += gen.cycle_output
                     remaining_offline_time_for_gen -= gen.time_progress
                     gen.is_generating = False
                 else:
@@ -57,6 +61,7 @@ try: # Load user data from save file
                     num_full_cycles_offline = int(remaining_offline_time_for_gen // effective_time_for_cycle)
                     if num_full_cycles_offline > 0:
                         user.money += gen.cycle_output * num_full_cycles_offline
+                        lets_see += gen.cycle_output * num_full_cycles_offline
                         remaining_offline_time_for_gen -= num_full_cycles_offline * effective_time_for_cycle
                     
                     # Update progress of the current (potentially new) cycle
@@ -66,6 +71,7 @@ try: # Load user data from save file
                         gen.is_generating = False # Reset if it perfectly finished
                         if gen.id in user.managers: # And restart if managed
                             gen.start_generation_cycle(user.generators)
+    print(f"\nOffline progress added: ${lets_see} (simulated) ") if DEBUG_MODE else None
 
 except Exception as e:
     print("\n\n (≧ヘ≦ ) Error loading save file, creating new user. (≧ヘ≦ ) \n\n") if DEBUG_MODE else None
@@ -83,22 +89,24 @@ next_debug = 0
 count = 1
 
 # Start background music
-BACKGROUND_MUSIC.play(loops=-1)
-BACKGROUND_MUSIC.set_volume(0.05)
+music_player = Music(volume=0.05) # Create an instance of the Music class
+
 # Main loop
-clock = pygame.time.Clock()
+clock = pygame.time.Clock() # initialise clock 
 while True:
     events = pygame.event.get() 
-    current_screen = state_manager.current_state 
-    if current_screen:
-        current_screen.handle_events(events)
-        current_screen.update()
-        current_screen.render()
-    else: 
-        print("\n\n (≧ヘ≦ ) No current screen found, exiting game. (≧ヘ≦ ) \n\n")
+    current_state = state_manager.current_state 
+    try:
+        current_state.handle_events(events)
+        current_state.update()
+        current_state.render()
+    except Exception as e:
+        print(f"\n\n(≧ヘ≦ ) No current screen found, exiting game. (≧ヘ≦ ) ")
         SaveStates.save_user(user)
         pygame.quit()
         sys.exit()
+
+    music_player.update() # update music player
 
     if DEBUG_MODE:
         now = time.time()

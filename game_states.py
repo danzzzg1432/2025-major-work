@@ -20,12 +20,8 @@ class StateManager: # global state manager
         self.states = {
             MAIN_MENU: MainMenu(screen, user, self),
             GAME_MENU: GameMenu(screen, user, self),
-            # SETTINGS_MENU: SettingsMenu(screen, self),
-            # SHOP_MENU: ShopMenu(screen, self),
-            # LOGIN_MENU: LoginMenu(screen, self),
-            # REGISTER_MENU: RegisterMenu(screen, self),
             # HELP_MENU: HelpMenu(screen, self),
-            TESTING: Testing(screen, user, self)
+            TESTING: Testing(screen, user, self) if DEBUG_MODE else None
             } 
         self.user = user
 
@@ -37,7 +33,6 @@ class StateManager: # global state manager
     @property
     def current_state(self): # get the current state object
         return self.get_state_object(self.state)
-    
     
     def get_state_object(self, state_name): # get the state object from the states dictionary
         return self.states.get(state_name, None)
@@ -55,9 +50,7 @@ class MainMenu:  # —— Main menu screen
         self.button_font = DEFAULT_FONT
         self.user = user
         # buttons in the center
-        self.centre_buttons = self.create_centre_buttons()
-        # other buttons
-        self.other_buttons = self.create_other_buttons()
+        self.buttons = self.create_centre_buttons()
 
 
     def create_centre_buttons(self):
@@ -73,11 +66,6 @@ class MainMenu:  # —— Main menu screen
             #     "Settings", GRAY, self.button_font, BLACK,
             #     callback=self.open_settings
             # ),
-        ]
-    """ in all seriousness these two functions are the same idk why they are separated"""
-    def create_other_buttons(self):
-        
-        return [
             Button( # quit button
                 50, 360, 80, 60, "X Quit", GRAY, self.button_font, 
                 BLACK, callback=self.quit_game, border_radius=15
@@ -87,12 +75,6 @@ class MainMenu:  # —— Main menu screen
                 50, 460, 80, 60, "? Help", GRAY, self.button_font,
                 BLACK, callback=self.show_help, border_radius=15
             ),
-            
-            # Button( # settings button
-            #        50, 560, 60, 60, emoji.emojize(":gear:"), GRAY, pygame.font.Font(None),
-            #     BLACK, callback=self.open_settings
-            # ),
-            
         ]
 
     # callbacks ─────────────────────────────────────────────────────────
@@ -126,7 +108,7 @@ class MainMenu:  # —— Main menu screen
                 pos = pygame.mouse.get_pos()
                 
                 # big buttons
-                for btn in self.centre_buttons + self.other_buttons:
+                for btn in self.buttons:
                     if btn.is_hovered(pos):
                         btn.click()
 
@@ -136,7 +118,7 @@ class MainMenu:  # —— Main menu screen
     # updates ─────────────────────────────────────────────────
     def update(self):
         pos = pygame.mouse.get_pos()
-        for btn in self.centre_buttons + self.other_buttons:
+        for btn in self.buttons:
             btn.animations(pos)
 
 
@@ -145,13 +127,9 @@ class MainMenu:  # —— Main menu screen
         # blit background image
         self.screen.blit(main_menu_background, (-200,0)) 
         
-        # draw big buttons
-        for btn in self.centre_buttons:
+        # draw buttons
+        for btn in self.buttons:
             btn.draw(self.screen)
-
-        # draw left-side icons
-        for icon in self.other_buttons:
-            icon.draw(self.screen)
 
         pygame.display.flip()
 
@@ -179,9 +157,9 @@ class GameMenu:
         
         self.profile_pic = CreateFrect(5, 5, 165, 165, bg_colour=None, id="profile_picture", image=williamdu)
         
-        money_display_height = self.title_font.get_height() + 10 # Add some padding
-        income_display_height = self.subtitle_font.get_height() + 10 # Add some padding
-        income_display_top_y = self.MONEY_DISPLAY_TOP_Y + money_display_height + self.HUD_TEXT_GAP
+        self.money_display_height = self.title_font.get_height() + 10 # Add some padding
+        self.income_display_height = self.subtitle_font.get_height() + 10 # Add some padding
+        self.income_display_top_y = self.MONEY_DISPLAY_TOP_Y + self.money_display_height + self.HUD_TEXT_GAP
         
         self.nav_buttons = self.create_nav_column() # navigation column
         self.rows = self.create_rows() # generator row creating
@@ -191,7 +169,7 @@ class GameMenu:
                 x=550,
                 y=20,
                 width=self.MONEY_DISPLAY_WIDTH,
-                height=money_display_height,
+                height=self.money_display_height,
                 bg_colour=None,
                 font=self.title_font,
                 font_colour=WHITE,
@@ -201,14 +179,14 @@ class GameMenu:
                 x=550,
                 y=100,
                 width=self.INCOME_DISPLAY_WIDTH,
-                height=income_display_height,
+                height=self.income_display_height,
                 bg_colour=None,
                 font=self.subtitle_font,
                 font_colour=WHITE, 
                 display_callback=lambda: f"{format_large_number(self.user.income_per_second)}/s (revenue per second)"
             )
             
-        }
+        } if self.active_panel != "shop" else {}
 
         
     def create_rows(self): # Create the column rows for the generators
@@ -218,6 +196,7 @@ class GameMenu:
         ICON_SIZE   = 80
         BAR_W, BAR_H = 320, 60
         NAV_BAR_WIDTH = 180
+        
         CONTENT_WIDTH = SCREEN_WIDTH - NAV_BAR_WIDTH
         COLUMN_WIDTH = ICON_SIZE + 30 + BAR_W
         INTER_COLUMN_GAP = 70
@@ -229,7 +208,7 @@ class GameMenu:
         for g_id, proto in GENERATOR_PROTOTYPES.items():
             col_x = LEFT_COL_X  if idx % 2 == 0 else RIGHT_COL_X
             row_y = 180 + (idx//2) * ROW_HEIGHT
-            
+            bar_x = col_x + ICON_SIZE + 30
             self.user.ensure_generator(g_id) # Ensure generator exists for display callbacks
             generator_obj = self.user.generators[g_id]
 
@@ -244,7 +223,7 @@ class GameMenu:
                                 display_callback=lambda g=generator_obj:
                                     f"{g.amount}", border_radius=15)
 
-            bar_x = col_x + ICON_SIZE + 30
+            
             rev_bar = CreateFrect(bar_x, row_y+10, BAR_W, BAR_H,
                                   WHITE,
                                   font=self.row_font, font_colour=BLACK,
@@ -407,6 +386,8 @@ class GameMenu:
                 r["name"].draw(self.screen)
                 r["cost"].draw(self.screen)
                 r["btn"].draw(self.screen)
+                r["money_display"].draw(self.screen)
+                r["income_display"].draw(self.screen)
         elif self.active_panel == "upgrades":
             self.render_upgrades_panel()    
             
@@ -428,8 +409,6 @@ class GameMenu:
                 font=self.row_font, font_colour=BLACK,
                 display_callback=lambda mp=mproto: format_large_number(mp["cost"])
             )
-            # Ensure generator exists to check if it can be managed, for the 'Owned' or 'Buy' display
-            can_be_managed = gid in self.user.generators and self.user.generators[gid].amount > 0
             buy_btn = Button(
                 700, y, 120, 40, "Buy", GRAY, self.row_font, BLACK,
                 callback=lambda current_gid=gid: self.user.buy_manager(current_gid),
@@ -440,7 +419,30 @@ class GameMenu:
                     )
                 )
             )
-            rows.append({"name": name_frect, "cost": cost_frect, "btn": buy_btn})
+            rows.append({"name": name_frect, "cost": cost_frect, "btn": buy_btn,
+                        "money_display": CreateFrect(
+                            550,
+                            20,
+                            self.MONEY_DISPLAY_WIDTH,
+                            self.money_display_height,
+                            bg_colour=None,
+                            font=self.title_font,
+                            font_colour=WHITE,
+                display_callback=lambda: format_large_number(round(self.user.money))
+                        ),
+                        "income_display": CreateFrect(
+                            x=550,
+                            y=100,
+                            width=self.INCOME_DISPLAY_WIDTH,
+                            height=self.income_display_height,
+                            bg_colour=None,
+                            font=self.subtitle_font,
+                            font_colour=WHITE, 
+                            display_callback=lambda: f"{format_large_number(self.user.income_per_second)}/s (revenue per second)"
+                        )
+            }
+                        )
+                        
         return rows
     
     # upgrades menu ──────────────────────────────────────────────────────────
