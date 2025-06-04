@@ -25,6 +25,10 @@ def apply_upgrades(user, generator_id_that_triggered_check):
 
 
 class Generator:
+    """
+    Represents the money-generating entity in the game. 
+    
+    """
     def __init__(self, id, name, base_rate, base_price, base_time, level=1, amount=0, growth_rate=1.07, time_progress=0.0, is_generating=False):
         self.id = id
         self.base_rate = base_rate # rate of money generation per cycle
@@ -104,7 +108,7 @@ class Generator:
         a = self.base_price * (self.growth_rate ** self.amount)
         n = quantity
         if self.growth_rate != 1:
-            total_cost = int(a * (1 - (self.growth_rate)**n) / (1 - (self.growth_rate)))
+            total_cost = int(a * (1 - (self.growth_rate)**n) / (1 - (self.growth_rate))) # geometric series sum formula. if you need me to prove this, ask me
         else:
             total_cost = int(a * n)
         if user.money >= total_cost:
@@ -113,8 +117,8 @@ class Generator:
             if user:
                 apply_upgrades(user, self.id)
             # If it's the first purchase and not managed, start the first cycle
-            if self.amount == quantity and not self.is_generating and self.id not in user.managers:
-                self.start_generation_cycle(user.generators)
+            # if self.amount == quantity and not self.is_generating and self.id not in user.managers:
+            #     self.start_generation_cycle(user.generators) 
 
     def to_dict(self):
         return { 
@@ -167,9 +171,12 @@ class Manager:
         
         
 class User:
-    def __init__(self, money=0.0): # float for precision with dt
+    """
+    The current user class. Handles the generators, managers and money owned.
+    """
+    def __init__(self, money=0.0):
         self.generators = {}
-        self.money = float(money) # double double check that money is float
+        self.money = float(money)
         self.managers = {} 
         
     def manual_generate(self, generator_id):
@@ -200,9 +207,9 @@ class User:
         target_manager = Manager(manager_id, target_manager_proto["name"], target_manager_proto["cost"])
         if target_manager.buy(self):
             # If manager bought, and generator exists and has items, start its cycle if not already running
-            if manager_id in self.generators and self.generators[manager_id].amount > 0 and not self.generators[manager_id].is_generating:
-                 self.generators[manager_id].start_generation_cycle(self.generators)
-            print(f"purchase of {manager_id} was successful") if DEBUG_MODE else None
+            # if manager_id in self.generators and self.generators[manager_id].amount > 0 and not self.generators[manager_id].is_generating:
+            #      self.generators[manager_id].start_generation_cycle(self.generators)
+            # print(f"purchase of {manager_id} was successful") if DEBUG_MODE else None
             return True
         else:
             print(f"purchase of {manager_id} was failed") if DEBUG_MODE else None

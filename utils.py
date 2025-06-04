@@ -15,10 +15,12 @@ def format_large_number(num):
     formatted_num = f"{num:.3f}".rstrip('0').rstrip('.')
     
     # Return formatted number with appropriate suffix
-    suffixes = ["", "K", "M", "B", "T", "Qa", 
-                "Qi", "Sx", "Sp", "Oc", "No", "Dc", "Ud", 
-                "Dd", "Td", "Qad", "Qid", "Sxd", "Spd", 
-                "Ocd", "Nod", "Vg"]
+    suffixes = [
+            "",    "K",   "M",   "B",   "T",    "Qa",   "Qi",   "Sx",   "Sp",   "Oc",   # 10^0…10^27
+            "No",  "Dc",  "Ud",  "Dd",  "Td",   "Qad",  "Qid",  "Sxd",  "Spd",  "Ocd",  # 10^30…10^57
+            "Nod", "Vg",  "Vd",  "Tg",  "Qag",  "Qig",  "Sxg",  "Spg",  "Uvg",  "Dvg",  # 10^60…10^87
+            "Tvg", "Qavg","Qivg","Sxvg","Spvg"                                            # 10^90…10^102
+           ]
     
     if magnitude < len(suffixes):
         return f"{formatted_num} {suffixes[magnitude]}" # if the number has a pretty suffix, return it with the suffix

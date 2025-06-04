@@ -6,15 +6,15 @@ from ui_elements import *  # Import UI classes
 from game_states import *  # Import game states
 from save_loads import *  # Import save/load functions
 
-
-
 import sys
 import time
 
-# Initialise pygame and screen
+# Initialise pygame, sound control and screen
 pygame.init()
+pygame.mixer.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
- 
+
+
 try: # Load user data from save file
     if DEBUG_MODE:
         print("\n\n\n (づ｡◕‿‿◕｡)づ DEBUG MODE ACTIVE (づ｡◕‿‿◕｡)づ \n\n\n")
@@ -68,6 +68,8 @@ try: # Load user data from save file
                             gen.start_generation_cycle(user.generators)
 
 except Exception as e:
+    print("\n\n (≧ヘ≦ ) Error loading save file, creating new user. (≧ヘ≦ ) \n\n") if DEBUG_MODE else None
+    print(Exception, e) if DEBUG_MODE else None
     if DEBUG_MODE:
         print(f" (≧ヘ≦ ) Error loading save file: {e} (≧ヘ≦ ) ")
     user = User(STARTING_MONEY) 
@@ -80,6 +82,9 @@ pygame.display.set_caption(f"Idle Tutor Tycoon - {GAME_TITLE}")
 next_debug = 0 
 count = 1
 
+# Start background music
+BACKGROUND_MUSIC.play(loops=-1)
+BACKGROUND_MUSIC.set_volume(0.05)
 # Main loop
 clock = pygame.time.Clock()
 while True:

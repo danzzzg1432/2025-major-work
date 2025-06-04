@@ -1,98 +1,83 @@
 {
     "user_data": {
-        "money": 2.242456270346505e+20,
+        "money": 21230708.51295,
         "generators": [
             {
                 "id": "g1",
-                "level": 16,
-                "amount": 65,
-                "time_progress": 0.009952999994857235,
+                "level": 2,
+                "amount": 30,
+                "time_progress": 0.3,
                 "is_generating": true
             },
             {
                 "id": "g2",
-                "level": 16,
-                "amount": 50,
-                "time_progress": -0.004000000000019099,
+                "level": 2,
+                "amount": 46,
+                "time_progress": -0.009999999999990905,
                 "is_generating": false
             },
             {
                 "id": "g3",
-                "level": 16,
-                "amount": 50,
-                "time_progress": -0.006999999999997897,
+                "level": 1,
+                "amount": 15,
+                "time_progress": -0.009999999999990905,
                 "is_generating": false
             },
             {
                 "id": "g4",
-                "level": 16,
-                "amount": 50,
-                "time_progress": -0.012999999999998124,
+                "level": 1,
+                "amount": 3,
+                "time_progress": -0.005000000000023874,
                 "is_generating": false
             },
             {
                 "id": "g5",
-                "level": 16,
-                "amount": 50,
-                "time_progress": 1.2099530000123195,
-                "is_generating": true
+                "level": 1,
+                "amount": 0,
+                "time_progress": 0.0,
+                "is_generating": false
             },
             {
                 "id": "g6",
-                "level": 16,
-                "amount": 50,
-                "time_progress": -0.010999999999967258,
+                "level": 1,
+                "amount": 0,
+                "time_progress": 0.0,
                 "is_generating": false
             },
             {
                 "id": "g7",
-                "level": 16,
-                "amount": 50,
-                "time_progress": 15.736953000014182,
-                "is_generating": true
+                "level": 1,
+                "amount": 0,
+                "time_progress": 0.0,
+                "is_generating": false
             },
             {
                 "id": "g8",
-                "level": 16,
-                "amount": 90,
-                "time_progress": 2.458018000033917,
-                "is_generating": true
+                "level": 1,
+                "amount": 0,
+                "time_progress": 0.0,
+                "is_generating": false
             },
             {
                 "id": "g9",
-                "level": 16,
-                "amount": 50,
-                "time_progress": 355.20099601030233,
-                "is_generating": true
+                "level": 1,
+                "amount": 0,
+                "time_progress": 0.0,
+                "is_generating": false
             },
             {
                 "id": "g0",
-                "level": 16,
-                "amount": 91,
-                "time_progress": 1991.1876020691416,
-                "is_generating": true
+                "level": 1,
+                "amount": 0,
+                "time_progress": 0.0,
+                "is_generating": false
             }
         ],
         "managers": [
             {
-                "id": "g9"
-            },
-            {
-                "id": "g5"
-            },
-            {
-                "id": "g0"
-            },
-            {
-                "id": "g8"
-            },
-            {
                 "id": "g1"
-            },
-            {
-                "id": "g7"
             }
         ]
     },
-    "save_time": "2025-06-03T06:04:31.607432+00:00"
+    "save_time": "2025-06-04T06:38:50.096811+00:00"
 }

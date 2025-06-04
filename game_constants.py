@@ -16,6 +16,7 @@ ASSETS_DIR = r"assets"
 IMAGES_DIR = f"{ASSETS_DIR}/images"
 SOUNDS_DIR = f"{ASSETS_DIR}/sounds"
 FONTS_DIR = f"{ASSETS_DIR}/fonts"
+SOUNDS_DIR = f"{ASSETS_DIR}/sounds"
 SAVE_DIR = "savestates/save_data.json"
 
 # Colours (RGB values)
@@ -109,6 +110,12 @@ williamdu = load_image(f"{IMAGES_DIR}/williamdu.png", (165, 165))
 main_menu_background = load_image(f"{IMAGES_DIR}/ittmainmenu.png")
 idle_tutor_tycoon_logo = load_image(f"{IMAGES_DIR}/itt_logo.png")
 game_menu_background = load_image(f"{IMAGES_DIR}/ittgamebackground.png")
+
+# Load sounds 
+BUTTON_PRESS_SOUND = pygame.mixer.Sound(f"{SOUNDS_DIR}/button_press.wav")
+BACKGROUND_MUSIC = pygame.mixer.Sound(f"{SOUNDS_DIR}/itt_background_music.mp3")
+BUTTON_PRESS_SOUND.set_volume(0.4)
+BACKGROUND_MUSIC.set_volume(0.05)
 
 # Generator prototypes
 GENERATOR_PROTOTYPES = {

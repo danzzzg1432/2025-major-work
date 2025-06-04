@@ -100,16 +100,16 @@ class MainMenu:  # —— Main menu screen
         # self.state_manager.set_state(TESTING) if DEBUG_MODE else self.state_manager.set_state(GAME_MENU)
         self.state_manager.set_state(GAME_MENU)
 
-    def open_settings(self):
-        # TODO: swap to SettingsMenu state when it's implemented
-        self.settings()
+    # def open_settings(self):
+    #     # TODO: swap to SettingsMenu state when it's implemented
+    #     self.settings()
 
     def show_help(self):
         # TODO: implement help-screen transition here
         print("Help icon clicked") if DEBUG_MODE else None
         
     def quit_game(self):
-        SaveStates.save_user(self.user)
+        # SaveStates.save_user(self.user) # don't need as its just the main menu lol
         pygame.quit()
         sys.exit()
 
@@ -155,9 +155,6 @@ class MainMenu:  # —— Main menu screen
 
         pygame.display.flip()
 
-   # unfinished stuff ──────────────────────────────────────────────────────────
-    def settings(self):
-        pass
 
 
 
@@ -214,7 +211,7 @@ class GameMenu:
         }
 
         
-    def create_rows(self):
+    def create_rows(self): # Create the column rows for the generators
         rows = [] 
         idx = 0
         ROW_HEIGHT = 110
@@ -241,11 +238,11 @@ class GameMenu:
                                font=self.row_font, font_colour=BLACK,
                                display=proto["name"][0]) 
 
-            owned = CreateFrect(col_x+15, row_y+ICON_SIZE-10, 50, 24,
+            owned = CreateFrect(col_x+15, row_y+ICON_SIZE-10, 55, 24,
                                 LIGHT_GRAY,
                                 font=self.row_font, font_colour=BLACK,
                                 display_callback=lambda g=generator_obj:
-                                    f"{g.amount}")
+                                    f"{g.amount}", border_radius=15)
 
             bar_x = col_x + ICON_SIZE + 30
             rev_bar = CreateFrect(bar_x, row_y+10, BAR_W, BAR_H,
@@ -272,9 +269,9 @@ class GameMenu:
                                     LIGHT_GRAY,
                                     font=self.time_display_font, font_colour=BLACK,
                                     display_callback=lambda g=generator_obj, u=self.user: (
-                                        f"{g.time_progress:.1f}s" if g.is_generating else f"{g.get_effective_time(u.generators):.1f}s"
-                                    )
-                                   )
+                                        f"{g.time_progress:.1f}s" if g.is_generating else f"{g.get_effective_time(u.generators):.1f}s"),border_radius=15,
+                                        )
+                                   
             
             rows.append({
                 "g_id": g_id,
@@ -314,26 +311,56 @@ class GameMenu:
     def handle_events(self, events): 
         for e in events:
             if e.type == pygame.QUIT:
-                SaveStates.save_user(self.user);  pygame.quit();  sys.exit()
+                SaveStates.save_user(self.user)
+                pygame.quit()
+                sys.exit()
 
             elif e.type == pygame.MOUSEBUTTONDOWN:
                 pos = pygame.mouse.get_pos()
-                
+
+                #Check Navigation Buttons first
                 for nav_button in self.nav_buttons:
                     if nav_button.is_hovered(pos):
-                        nav_button.click(); return True
+                        nav_button.click()
+                        return True  # Event handled, stop further processing for this click
 
-                for r in self.rows:
-                    if r["icon"].frect.collidepoint(pos):
-                        self.user.manual_generate(r["g_id"])
-                    if r["buy"].is_hovered(pos):
-                        r["buy"].click()
-                    # No click action for time_display for now, it's just a display
+                #Handle interactions based on the active panel
+                if self.active_panel == "shop":
+                    # Check buttons within the shop panel
+                    for r in self.shop_rows:
+                        if r["btn"].is_hovered(pos):
+                            r["btn"].click()
+                            return True  # Event handled
+                    # If the click is within the shop panel's general area but not on a button,
+                    # consume the event to prevent click-through to underlying elements.
+                    # Panel is just copied from the render method
+                    shop_panel_rect = pygame.Rect(175, 0, 1030, SCREEN_HEIGHT)
+                    if shop_panel_rect.collidepoint(pos):
+                        print("shop panel clicked") if DEBUG_MODE else None
+                        return True # Click was inside shop panel area, consume it.
+                # If click was outside shop panel, it's not handled by this block.
 
-                for r in self.shop_rows:
-                    if r["btn"].is_hovered(pos):
-                        r["btn"].click()
-        return True
+                elif self.active_panel == "upgrades":
+                    # Upgrades panel is currently display-only.
+                    # Consume clicks within its area to prevent click-through.
+                    upgrades_panel_rect = pygame.Rect(175, 0, 1030, SCREEN_HEIGHT)
+                    if upgrades_panel_rect.collidepoint(pos):
+                        print("upgrades panel clicked") if DEBUG_MODE else None
+                        return True # Click was inside upgrades panel area, consume it.
+                
+                # If no panel is active, normally handle generator row interactions
+                elif self.active_panel is None:
+                    for r in self.rows:
+                        # Check icon click 
+                        if r["icon"].frect.collidepoint(pos): # Assuming frect is the clickable area
+                            self.user.manual_generate(r["g_id"])
+                            return True  # Event handled
+                        # Then check buy button click
+                        if r["buy"].is_hovered(pos):
+                            r["buy"].click()
+                            return True  # Event handled
+
+        return True # for any stray possibility that a click was skipped and not handled. just gets eaten
 
     # updates ──────────────────────────────────────────────────────────
     def update(self):
@@ -431,8 +458,15 @@ class GameMenu:
                 self.screen.blit(line, (240, y)); y += 55
 
     def open_panel(self, name):
-        self.active_panel = name if self.active_panel != name else None
+        # if the panel is already open, close it
+        # if the panel is not open, open it
+        self.active_panel = name if self.active_panel != name else None 
 
+
+
+
+
+# ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 class Testing: # ignore
     def __init__(self, screen, user, state_manager):
         self.screen = screen
