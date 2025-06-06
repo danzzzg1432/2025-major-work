@@ -1,83 +1,114 @@
 {
     "user_data": {
-        "money": 10.0,
+        "money": 5777325160.0,
         "generators": [
             {
                 "id": "g1",
-                "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false
+                "level": 8,
+                "amount": 175,
+                "time_progress": 0.040999999999999745,
+                "is_generating": true
             },
             {
                 "id": "g2",
-                "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false
+                "level": 4,
+                "amount": 70,
+                "time_progress": 0.3580000000000001,
+                "is_generating": true
             },
             {
                 "id": "g3",
-                "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false
+                "level": 4,
+                "amount": 63,
+                "time_progress": 0.3580000000000001,
+                "is_generating": true
             },
             {
                 "id": "g4",
-                "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false
+                "level": 4,
+                "amount": 64,
+                "time_progress": 0.3280000000000016,
+                "is_generating": true
             },
             {
                 "id": "g5",
-                "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false
+                "level": 2,
+                "amount": 36,
+                "time_progress": 4.876890000000026,
+                "is_generating": true
             },
             {
                 "id": "g6",
-                "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false
+                "level": 2,
+                "amount": 29,
+                "time_progress": 1.2534819999997895,
+                "is_generating": true
             },
             {
                 "id": "g7",
-                "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false
+                "level": 2,
+                "amount": 28,
+                "time_progress": 1.6604820000112692,
+                "is_generating": true
             },
             {
                 "id": "g8",
                 "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false
+                "amount": 23,
+                "time_progress": 960.4238439981976,
+                "is_generating": true
             },
             {
                 "id": "g9",
                 "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false
+                "amount": 15,
+                "time_progress": 4759.564729013761,
+                "is_generating": true
             },
             {
                 "id": "g0",
                 "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false
+                "amount": 3,
+                "time_progress": 23199.360729091357,
+                "is_generating": true
             }
         ],
-        "managers": []
+        "managers": [
+            {
+                "id": "g1"
+            },
+            {
+                "id": "g2"
+            },
+            {
+                "id": "g3"
+            },
+            {
+                "id": "g4"
+            },
+            {
+                "id": "g5"
+            },
+            {
+                "id": "g8"
+            },
+            {
+                "id": "g6"
+            },
+            {
+                "id": "g7"
+            },
+            {
+                "id": "g9"
+            },
+            {
+                "id": "g0"
+            }
+        ]
     },
+    "save_time": "2025-06-06T05:50:16.055466+00:00",
     "music_data": {
-        "volume": 0.4,
+        "volume": 0.45,
         "is_paused": false
-    },
-    "save_time": "2025-06-06T06:01:41.534745+00:00"
+    }
 }
