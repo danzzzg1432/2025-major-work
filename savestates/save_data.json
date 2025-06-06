@@ -1,12 +1,12 @@
 {
     "user_data": {
-        "money": 14.0,
+        "money": 10.0,
         "generators": [
             {
                 "id": "g1",
                 "level": 1,
-                "amount": 1,
-                "time_progress": -0.009999999999999454,
+                "amount": 0,
+                "time_progress": 0.0,
                 "is_generating": false
             },
             {
@@ -75,5 +75,9 @@
         ],
         "managers": []
     },
-    "save_time": "2025-06-04T08:01:59.495912+00:00"
+    "music_data": {
+        "volume": 0.4,
+        "is_paused": false
+    },
+    "save_time": "2025-06-06T06:01:41.534745+00:00"
 }

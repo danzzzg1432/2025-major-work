@@ -15,24 +15,32 @@ class StateManager: # global state manager
     Initialises with the screen and user objects, and passes them onto the states.
     Analogous to central station in Sydney, but less cool.
     """
-    def __init__(self, screen, user):
-        self.state = MAIN_MENU
+    def __init__(self, screen, user, music_player):
+        self.state = MAIN_MENU # Keep track of the current state name
         self.states = {
             MAIN_MENU: MainMenu(screen, user, self),
             GAME_MENU: GameMenu(screen, user, self),
-            # HELP_MENU: HelpMenu(screen, self),
+            SETTINGS_MENU: SettingsMenu(screen, user, self, music_player, pass_back=None), # Pass current_active_state_name
+            HELP_MENU: HelpMenu(screen, user, self, pass_back=None),
             TESTING: Testing(screen, user, self) if DEBUG_MODE else None
             } 
         self.user = user
+        self.music_player = music_player
 
-    def set_state(self, new_state): # set the state of the game
-        self.state = new_state # changes the state to the new state. 
-        pygame.display.set_caption(f"{GAME_TITLE} - {new_state.replace('_', ' ').title()}") # set the window title to the current state
+    def set_state(self, new_state_name, pass_back=None): # set the state of the game
+        self.state = new_state_name # Update current active state name
+        pygame.display.set_caption(f"{GAME_TITLE} - {new_state_name.replace('_', ' ').title()}") # set the window title to the current state
+
+        # Update pass_back for states that use it
+        target_state_object = self.get_state_object(new_state_name)
+        if target_state_object and hasattr(target_state_object, 'pass_back'):
+            target_state_object.pass_back = pass_back
 
 
     @property
     def current_state(self): # get the current state object
         return self.get_state_object(self.state)
+    
     
     def get_state_object(self, state_name): # get the state object from the states dictionary
         return self.states.get(state_name, None)
@@ -50,10 +58,10 @@ class MainMenu:  # —— Main menu screen
         self.button_font = DEFAULT_FONT
         self.user = user
         # buttons in the center
-        self.buttons = self.create_centre_buttons()
+        self.buttons = self.create_buttons()
 
 
-    def create_centre_buttons(self):
+    def create_buttons(self):
         main_x = (SCREEN_WIDTH - BUTTON_WIDTH) // 2
         return [
             Button( # enter game button
@@ -61,13 +69,13 @@ class MainMenu:  # —— Main menu screen
                 "Enter Game", GRAY, self.button_font, BLACK,
                 callback=self.start_game, border_radius=15
             ),
-            # Button( # settings button
-            #     main_x, 440, BUTTON_WIDTH, BUTTON_HEIGHT,
-            #     "Settings", GRAY, self.button_font, BLACK,
-            #     callback=self.open_settings
-            # ),
+            Button( # settings button
+                50, 360, 80, 60,
+                "O Settings", GRAY, self.button_font, BLACK,
+                callback=self.open_settings, border_radius=15
+            ),
             Button( # quit button
-                50, 360, 80, 60, "X Quit", GRAY, self.button_font, 
+                50, 560, 80, 60, "X Quit", GRAY, self.button_font, 
                 BLACK, callback=self.quit_game, border_radius=15
             ),
             
@@ -82,16 +90,16 @@ class MainMenu:  # —— Main menu screen
         # self.state_manager.set_state(TESTING) if DEBUG_MODE else self.state_manager.set_state(GAME_MENU)
         self.state_manager.set_state(GAME_MENU)
 
-    # def open_settings(self):
-    #     # TODO: swap to SettingsMenu state when it's implemented
-    #     self.settings()
+    def open_settings(self):
+        self.state_manager.set_state(SETTINGS_MENU, pass_back=MAIN_MENU)
 
     def show_help(self):
-        # TODO: implement help-screen transition here
+        self.state_manager.set_state(HELP_MENU, pass_back=MAIN_MENU)
         print("Help icon clicked") if DEBUG_MODE else None
         
     def quit_game(self):
         # SaveStates.save_user(self.user) # don't need as its just the main menu lol
+        SaveStates.save_all(self.user, self.state_manager.music_player) # save music state
         pygame.quit()
         sys.exit()
 
@@ -100,7 +108,7 @@ class MainMenu:  # —— Main menu screen
         for event in events:
             if event.type == pygame.QUIT:
                 if self.user:
-                    SaveStates.save_user(self.user)
+                    SaveStates.save_all(self.user, self.state_manager.music_player)
                 pygame.quit()
                 sys.exit()
 
@@ -132,6 +140,7 @@ class MainMenu:  # —— Main menu screen
             btn.draw(self.screen)
 
         pygame.display.flip()
+        
 
 
 
@@ -164,7 +173,10 @@ class GameMenu:
         self.nav_buttons = self.create_nav_column() # navigation column
         self.rows = self.create_rows() # generator row creating
         self.shop_rows = self.build_shop_menu()
-        self.hud_elems = {
+        self.hud_elems = self.create_hud_elems()
+
+    def create_hud_elems(self): # create hud elements
+        return {
             "money_display": CreateFrect(
                 x=550,
                 y=20,
@@ -185,10 +197,7 @@ class GameMenu:
                 font_colour=WHITE, 
                 display_callback=lambda: f"{format_large_number(self.user.income_per_second)}/s (revenue per second)"
             )
-            
-        } if self.active_panel != "shop" else {}
-
-        
+        }
     def create_rows(self): # Create the column rows for the generators
         rows = [] 
         idx = 0
@@ -269,8 +278,8 @@ class GameMenu:
         items = [
         ("Managers",  lambda: self.open_panel("shop")),
         ("Unlocks",   lambda: self.open_panel("upgrades")),
-        # ("Settings",  lambda: self.open_panel("settings")),
-        ("Help",      lambda: self.open_panel("help")),
+        ("Settings",  lambda: self.open_settings_panel()), # Changed to call new method
+        ("Help",      lambda: self.open_help_panel()),
         ("Exit",      self.save_and_exit),
         ]
         for idx, (label, callback) in enumerate(items):
@@ -279,18 +288,18 @@ class GameMenu:
     
     # callbacks ──────────────────────────────────────────────────────────
     def save_and_exit(self):
-        SaveStates.save_user(self.user)
+        SaveStates.save_all(self.user, self.state_manager.music_player)
         print("\n (づ｡◕‿‿◕｡)づ Saving user! \n") if DEBUG_MODE else None
         self.state_manager.set_state(MAIN_MENU)
         
     def save(self):
-        SaveStates.save_user(self.user)
+        SaveStates.save_all(self.user, self.state_manager.music_player)
 
     # event handling ──────────────────────────────────────────────────────────
     def handle_events(self, events): 
         for e in events:
             if e.type == pygame.QUIT:
-                SaveStates.save_user(self.user)
+                SaveStates.save_all(self.user, self.state_manager.music_player)
                 pygame.quit()
                 sys.exit()
 
@@ -343,10 +352,7 @@ class GameMenu:
 
     # updates ──────────────────────────────────────────────────────────
     def update(self):
-        now = pygame.time.get_ticks() / 1000
-        dt  = now - self.last_time
-        self.user.update(dt) # This now calls gen.update() for each generator
-        self.last_time = now
+
 
         mouse = pygame.mouse.get_pos()
         for r in self.hud_elems.values():
@@ -464,9 +470,278 @@ class GameMenu:
         # if the panel is not open, open it
         self.active_panel = name if self.active_panel != name else None 
 
+    def open_settings_panel(self): # New method for GameMenu to open settings
+        self.state_manager.set_state(SETTINGS_MENU, pass_back=GAME_MENU)
+    
+    def open_help_panel(self):
+        self.state_manager.set_state(HELP_MENU, pass_back=GAME_MENU)
+
+
+class SettingsMenu:
+    def __init__(self, screen, user, state_manager, music_player, pass_back=None):
+        self.screen = screen
+        self.user = user
+        self.state_manager = state_manager
+        self.music_player = music_player
+        self.font = DEFAULT_FONT
+        self.title_font = pygame.font.Font(LOGO_FONT, 28) 
+        self.item_font = pygame.font.Font(LOGO_FONT, 22) 
+        self.volume_step = 0.05 
+        self.pass_back = pass_back
 
 
 
+        self.buttons = []
+        self.display_elements = {} 
+        self.setup_ui()
+
+    def setup_ui(self):
+        
+        self.display_elements = self.create_display_elements()
+        self.buttons = self.create_buttons()
+
+    def create_display_elements(self):
+        elements = {}
+        elements["settings_title"] = CreateFrect(
+            400, 50, 400, 50,
+            None,
+            font=self.title_font, font_colour=BLACK,
+            display="Music Controls"
+        )
+
+        elements["song_title"] = CreateFrect(
+            200, 150, 800, 40,
+            None,
+            font=self.item_font, font_colour=BLACK,
+            display_callback=lambda: f"Now Playing: {self.music_player.get_current_song_display_name()}",
+            border_radius=10
+        )
+
+        volume_label_y_offset = 10
+        volume_display_y_offset = 5
+        volume_elements_y_base = 300
+
+        button_width_small         = 100 
+        volume_display_width_val   = 80  
+        volume_label_width_val     = self.item_font.size("Volume:")[0]
+        spacing_val                = 15  
+        half_offset                = (button_width_small - volume_display_width_val) // 2
+
+
+        group_width_buttons = button_width_small * 3 + spacing_val * 2      
+        start_x             = (SCREEN_WIDTH - group_width_buttons) // 2      
+
+        vol_down_x     = start_x
+        vol_display_x  = start_x + button_width_small + spacing_val + half_offset
+        vol_up_x       = start_x + (button_width_small + spacing_val) * 2
+
+        volume_label_x = vol_down_x - spacing_val - volume_label_width_val
+
+        elements["volume_label"] = CreateFrect(
+            volume_label_x, volume_elements_y_base + volume_label_y_offset,
+            volume_label_width_val, 40,
+            None,
+            font=self.item_font, font_colour=BLACK,
+            display="Volume:"
+        )
+        elements["volume_display"] = CreateFrect(
+            vol_display_x, volume_elements_y_base + volume_display_y_offset,
+            volume_display_width_val, 40,
+            GRAY,
+            font=self.item_font, font_colour=BLACK,
+            display_callback=lambda: f"{int(self.music_player.get_current_volume() * 100)}%",
+            border_radius=10
+        )
+        return elements
+
+    def create_buttons(self):
+        buttons = []
+        button_width_small = 100
+        button_height_small = 45
+
+        # Playback Buttons – centred horizontally
+        playback_y = 220
+        group_spacing = 15
+        group_width = button_width_small * 3 + group_spacing * 2 # 3 buttons + 2 spaces between
+        start_x = (SCREEN_WIDTH - group_width) // 2
+        rewind_x = start_x
+        pause_x  = rewind_x + button_width_small + group_spacing
+        skip_x   = pause_x + button_width_small + group_spacing
+
+        buttons.append(Button( # Rewind
+            rewind_x, playback_y, button_width_small, button_height_small,
+            "Rewind", GRAY, self.item_font, BLACK,
+            callback=self.music_player.rewind_song, border_radius=10
+        ))
+        buttons.append(Button( # Play/Pause
+            pause_x, playback_y, button_width_small, button_height_small,
+            "", GRAY, self.item_font, BLACK,
+            callback=self.music_player.toggle_pause,
+            display_callback=lambda: "Play" if self.music_player.is_paused else "Pause",
+            border_radius=10
+        ))
+        buttons.append(Button( # Skip
+            skip_x, playback_y, button_width_small, button_height_small,
+            "Skip", GRAY, self.item_font, BLACK,
+            callback=self.music_player.skip_song, border_radius=10
+        ))
+
+        # Volume Buttons – 
+        volume_buttons_y = 300
+        half_offset = (button_width_small - 80) // 2  
+
+        group_width_buttons = button_width_small * 3 + group_spacing * 2
+        start_x             = (SCREEN_WIDTH - group_width_buttons) // 2 
+
+        vol_down_x = start_x
+        vol_up_x   = start_x + (button_width_small + group_spacing) * 2
+
+        buttons.append(Button( # Volume Down
+            vol_down_x, volume_buttons_y, button_width_small, button_height_small,
+            "-", GRAY, self.item_font, BLACK,
+            callback=self.decrease_volume, border_radius=10
+        ))
+
+        buttons.append(Button( # Volume Up
+            vol_up_x, volume_buttons_y, button_width_small, button_height_small,
+            "+", GRAY, self.item_font, BLACK,
+            callback=self.increase_volume, border_radius=10
+        ))
+
+        buttons.append(Button(
+            (SCREEN_WIDTH - BUTTON_WIDTH) // 2, SCREEN_HEIGHT - 100, BUTTON_WIDTH, BUTTON_HEIGHT,
+            "Back", GRAY, self.font,
+            BLACK,
+            callback=self.go_back, border_radius=15
+        ))
+        return buttons
+
+    def increase_volume(self):
+        current_volume = self.music_player.get_current_volume()
+        new_volume = min(1.0, current_volume + self.volume_step)
+        self.music_player.set_volume(new_volume)
+
+    def decrease_volume(self):
+        current_volume = self.music_player.get_current_volume()
+        new_volume = max(0.0, current_volume - self.volume_step)
+        self.music_player.set_volume(new_volume)
+
+    def go_back(self):
+        if self.pass_back:
+            self.state_manager.set_state(self.pass_back)
+        else:
+            self.state_manager.set_state(MAIN_MENU)
+
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.QUIT:
+                if self.user:
+                    SaveStates.save_all(self.user, self.state_manager.music_player)
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                for btn in self.buttons:
+                    if btn.is_hovered(pos):
+                        btn.click()
+        return True
+
+    def update(self):
+        pos = pygame.mouse.get_pos()
+        for btn in self.buttons:
+            btn.animations(pos)
+
+    def render(self):
+        self.screen.fill(LIGHT_BLUE)
+        
+        # Draw all display elements
+        for element in self.display_elements.values():
+            element.draw(self.screen)
+
+        # Draw all buttons
+        for btn in self.buttons:
+            btn.draw(self.screen)
+            
+        pygame.display.flip()
+        
+
+class HelpMenu:
+    def __init__(self, screen, user, state_manager, pass_back=None):
+        self.screen = screen
+        self.user = user
+        self.state_manager = state_manager
+        self.font = DEFAULT_FONT
+        self.title_font = pygame.font.Font(LOGO_FONT, 28) 
+        self.item_font = pygame.font.Font(LOGO_FONT, 22) 
+        self.pass_back = pass_back
+        self.buttons = []
+        self.display_elements = {} 
+        self.setup_ui()
+
+    def setup_ui(self):
+        
+        self.display_elements = self.create_display_elements()
+        self.buttons = self.create_buttons()
+
+    def create_display_elements(self):
+        elements = {}
+        elements["settings_title"] = CreateFrect(
+            400, 50, 400, 50,
+            None,
+            font=self.title_font, font_colour=BLACK,
+            display="Help Menu"
+        )
+
+        return elements
+
+    def create_buttons(self):
+        buttons = []
+
+        buttons.append(Button(
+            (SCREEN_WIDTH - BUTTON_WIDTH) // 2, SCREEN_HEIGHT - 100, BUTTON_WIDTH, BUTTON_HEIGHT,
+            "Back", GRAY, self.font,
+            BLACK,
+            callback=self.go_back, border_radius=15
+        ))
+        return buttons
+
+    def go_back(self):
+        if self.pass_back:
+            self.state_manager.set_state(self.pass_back)
+        else:
+            self.state_manager.set_state(MAIN_MENU)
+
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.QUIT:
+                if self.user:
+                    SaveStates.save_all(self.user, self.state_manager.music_player)
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                pos = pygame.mouse.get_pos()
+                for btn in self.buttons:
+                    if btn.is_hovered(pos):
+                        btn.click()
+        return True
+
+    def update(self):
+        pos = pygame.mouse.get_pos()
+        for btn in self.buttons:
+            btn.animations(pos)
+
+    def render(self):
+        self.screen.fill(LIGHT_BLUE)
+        
+        # Draw all display elements
+        for element in self.display_elements.values():
+            element.draw(self.screen)
+
+        # Draw all buttons
+        for btn in self.buttons:
+            btn.draw(self.screen)
+            
+        pygame.display.flip()
 
 # ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
 class Testing: # ignore
@@ -521,7 +796,7 @@ class Testing: # ignore
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.QUIT:
-                SaveStates.save_user(self.user)
+                SaveStates.save_all(self.user, self.state_manager.music_player)
                 pygame.quit()
                 sys.exit()
             elif event.type == pygame.MOUSEBUTTONDOWN:

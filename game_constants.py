@@ -91,10 +91,10 @@ SAVE_FILE_NAME = "save_data.json"
 
 MAIN_MENU = "main_menu"
 GAME_MENU = "game_menu"
-# SETTINGS_MENU = "settings_menu"
+SETTINGS_MENU = "settings_menu"
 # LOGIN_MENU = "login_menu"
 # REGISTER_MENU = "register_menu"
-# HELP_MENU = "help_menu"
+HELP_MENU = "help_menu"
 TESTING = "testing"
 # Game states
 
@@ -111,11 +111,9 @@ main_menu_background = load_image(f"{IMAGES_DIR}/ittmainmenu.png")
 idle_tutor_tycoon_logo = load_image(f"{IMAGES_DIR}/itt_logo.png")
 game_menu_background = load_image(f"{IMAGES_DIR}/ittgamebackground.png")
 
-# Load sounds 
+# Load UI sounds
 BUTTON_PRESS_SOUND = pygame.mixer.Sound(f"{SOUNDS_DIR}/button_press.wav")
-BACKGROUND_MUSIC = pygame.mixer.Sound(f"{SOUNDS_DIR}/itt_background_music.mp3")
 BUTTON_PRESS_SOUND.set_volume(0.1)
-BACKGROUND_MUSIC.set_volume(0.05)
 
 # Generator prototypes
 GENERATOR_PROTOTYPES = {

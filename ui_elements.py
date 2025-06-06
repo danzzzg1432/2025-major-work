@@ -40,7 +40,8 @@ class Button: # global button class
         """Calls the callback function when the button is clicked"""
         BUTTON_PRESS_SOUND.play() # play the button press sound
         if self.callback:
-            self.callback()
+            self.callback() 
+
     def animations(self, pos):
         """Handles button animations, e.g. hover effects, click effects, etc."""
         self.colour = DARK_GRAY if self.is_hovered(pos) else self.initial_colour  # Change colour on hover
