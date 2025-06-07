@@ -115,6 +115,15 @@ class CreateFrect:
         self.image = image
         self.border_radius = border_radius # Added border_radius
         self.click_effect = click_effect # for frects requiring a click effect
+        self.shadow_colour = None
+        if self.bg_colour:
+            self.frect_shadow = pygame.FRect(x+2, y+4, width, height)
+            try:
+                color_obj = pygame.Color(self.bg_colour)
+                r, g, b, _ = color_obj
+                self.shadow_colour = (int(r * 0.5), int(g * 0.5), int(b * 0.5))
+            except (ValueError, TypeError):
+                self.shadow_colour = None
 
     def render_text(self, position="center", display=None): # render text inside the frect
         position_bank = {
@@ -150,7 +159,9 @@ class CreateFrect:
         """Drawing function where specific screen is specified (usually the main screen of the state)"""
         # draw rect and render images
         
-        if self.bg_colour != None:
+        if self.bg_colour is not None:
+            if self.shadow_colour:
+                pygame.draw.rect(screen, self.shadow_colour, self.frect_shadow, border_radius=self.border_radius)
             pygame.draw.rect(screen, self.bg_colour, self.frect, border_radius=self.border_radius) # Use border_radius here
         if self.image:
             # If image is present, typically you wouldn't draw the bg_colour rect unless image has transparency

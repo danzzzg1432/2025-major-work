@@ -40,6 +40,7 @@ class Generator:
         self.growth_rate = growth_rate # multiplier for price
         self.time_progress = time_progress  # Remaining time for the current cycle
         self.is_generating = is_generating  # True if currently in a generation cycle
+        self.reductions = 1 # number of reductions applied to the generator (future feature)
 
     def get_effective_time(self, all_user_generators):
         """Calculates the effective time for a generation cycle after milestone reductions."""
@@ -108,7 +109,7 @@ class Generator:
         a = self.base_price * (self.growth_rate ** self.amount)
         n = quantity
         if self.growth_rate != 1:
-            total_cost = int(a * (1 - (self.growth_rate)**n) / (1 - (self.growth_rate))) # geometric series sum formula. if you need me to prove this, ask me
+            total_cost = int(a * self.reductions * (1 - (self.growth_rate)**n) / (1 - (self.growth_rate))) # geometric series sum formula. if you need me to prove this, ask me
         else:
             total_cost = int(a * n)
         if user.money >= total_cost:
