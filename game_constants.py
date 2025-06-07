@@ -32,6 +32,7 @@ LIGHT_PINK = (255, 182, 193)
 PINK = (255, 105, 180)
 RED = (255, 0, 0)
 DARK_RED = (139, 0, 0)
+FOLLY = (255, 56, 100)
 
 # Greens (light to dark)
 LIGHT_GREEN = (144, 238, 144)
@@ -53,8 +54,8 @@ PURPLE = (128, 0, 128)
 DARK_PURPLE = (75, 0, 130)
 
 # Browns (light to dark)
-BEIGE = (245, 245, 220)
-TAN = (210, 180, 140)
+BEIGE = (220, 205, 185)
+TAN = (251, 222, 160)
 BROWN = (150, 75, 0)
 DARK_BROWN = (101, 67, 33)
 
@@ -65,6 +66,11 @@ GRAY = (200, 200, 200)
 DARK_GRAY = (150, 150, 150)
 BLACK = (0, 0, 0)
 
+# OTHER MORE SPECIFIC COLOURS
+BUTTON_UNPRESSED_COLOUR = (38,114,153)
+BUTTON_PRESSED_COLOUR = (28,84,123)
+BUTTON_SHADOW_COLOUR = (19,47,66)
+BUTTON_HOVER_COLOUR = (28,84,123)
 
 # UI settings 
 DEFAULT_FONT_SIZE = 20
@@ -110,6 +116,9 @@ williamdu = load_image(f"{IMAGES_DIR}/williamdu.png", (165, 165))
 main_menu_background = load_image(f"{IMAGES_DIR}/ittmainmenu.png")
 idle_tutor_tycoon_logo = load_image(f"{IMAGES_DIR}/itt_logo.png")
 game_menu_background = load_image(f"{IMAGES_DIR}/ittgamebackground.png")
+settings_icon = load_image(f"{IMAGES_DIR}/settings_icon.png", (50, 50))
+help_icon = load_image(f"{IMAGES_DIR}/help_icon.png", (50, 50))
+exit_icon = load_image(f"{IMAGES_DIR}/exit_icon.png", (50, 50))
 
 # Load UI sounds
 BUTTON_PRESS_SOUND = pygame.mixer.Sound(f"{SOUNDS_DIR}/button_press.wav")

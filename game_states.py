@@ -5,7 +5,6 @@ from ui_elements import *
 from save_loads import *
 
 from utils import format_large_number
-import emoji
 
 
 
@@ -16,7 +15,7 @@ class StateManager: # global state manager
     Analogous to central station in Sydney, but less cool.
     """
     def __init__(self, screen, user, music_player):
-        self.state = MAIN_MENU # Keep track of the current state name
+        self.state = GAME_MENU # Keep track of the current state name
         self.states = {
             MAIN_MENU: MainMenu(screen, user, self),
             GAME_MENU: GameMenu(screen, user, self),
@@ -65,23 +64,23 @@ class MainMenu:  # —— Main menu screen
         main_x = (SCREEN_WIDTH - BUTTON_WIDTH) // 2
         return [
             Button( # enter game button
-                main_x, 360, BUTTON_WIDTH, BUTTON_HEIGHT,
-                "Enter Game", GRAY, self.button_font, BLACK,
+                main_x, 500, BUTTON_WIDTH, BUTTON_HEIGHT,
+                "Enter Game", BUTTON_UNPRESSED_COLOUR, self.button_font, WHITE,
                 callback=self.start_game, border_radius=15
             ),
             Button( # settings button
                 50, 360, 80, 60,
-                "O Settings", GRAY, self.button_font, BLACK,
+                "", BUTTON_UNPRESSED_COLOUR, self.button_font, WHITE, icon_image=settings_icon,
                 callback=self.open_settings, border_radius=15
             ),
             Button( # quit button
-                50, 560, 80, 60, "X Quit", GRAY, self.button_font, 
-                BLACK, callback=self.quit_game, border_radius=15
+                50, 560, 80, 60, "", BUTTON_UNPRESSED_COLOUR, self.button_font, 
+                WHITE, icon_image=exit_icon, callback=self.quit_game, border_radius=15
             ),
             
             Button( # help button
-                50, 460, 80, 60, "? Help", GRAY, self.button_font,
-                BLACK, callback=self.show_help, border_radius=15
+                50, 460, 80, 60, "", BUTTON_UNPRESSED_COLOUR, self.button_font,
+                WHITE, icon_image=help_icon, callback=self.show_help, border_radius=15
             ),
         ]
 
@@ -95,11 +94,9 @@ class MainMenu:  # —— Main menu screen
 
     def show_help(self):
         self.state_manager.set_state(HELP_MENU, pass_back=MAIN_MENU)
-        print("Help icon clicked") if DEBUG_MODE else None
         
     def quit_game(self):
-        # SaveStates.save_user(self.user) # don't need as its just the main menu lol
-        SaveStates.save_all(self.user, self.state_manager.music_player) # save music state
+        SaveStates.save_all(self.user, self.state_manager.music_player) # save user and music state
         pygame.quit()
         sys.exit()
 
@@ -133,7 +130,7 @@ class MainMenu:  # —— Main menu screen
     # rendering ───────────────────────────────────────────────────────────
     def render(self):
         # blit background image
-        self.screen.blit(main_menu_background, (-200,0)) 
+        self.screen.blit(main_menu_background, (0,0)) 
         
         # draw buttons
         for btn in self.buttons:
@@ -165,6 +162,8 @@ class GameMenu:
         self.last_time = pygame.time.get_ticks() / 1000  # track for dt
         
         self.profile_pic = CreateFrect(5, 5, 165, 165, bg_colour=None, id="profile_picture", image=williamdu)
+        self.profile_pic_background = CreateFrect(0, 0, 175, 175, bg_colour=WHITE, id="profile_picture_background")
+        self.user_name = CreateFrect(67.5, 185, 40, 40, bg_colour=None, id="user_name", font=self.row_font, font_colour=WHITE, display="You, the Boss")
         
         self.money_display_height = self.title_font.get_height() + 10 # Add some padding
         self.income_display_height = self.subtitle_font.get_height() + 10 # Add some padding
@@ -206,40 +205,41 @@ class GameMenu:
         BAR_W, BAR_H = 320, 60
         NAV_BAR_WIDTH = 180
         
-        CONTENT_WIDTH = SCREEN_WIDTH - NAV_BAR_WIDTH
-        COLUMN_WIDTH = ICON_SIZE + 30 + BAR_W
-        INTER_COLUMN_GAP = 70
-        TOTAL_COLUMNS_WIDTH = 2 * COLUMN_WIDTH + INTER_COLUMN_GAP
-        MARGIN_X = (CONTENT_WIDTH - TOTAL_COLUMNS_WIDTH) // 2
-        LEFT_COL_X = NAV_BAR_WIDTH + MARGIN_X
-        RIGHT_COL_X = LEFT_COL_X + COLUMN_WIDTH + INTER_COLUMN_GAP
+        CONTENT_WIDTH = SCREEN_WIDTH - NAV_BAR_WIDTH # Area for main content, right of the nav bar
+        COLUMN_WIDTH = ICON_SIZE + 30 + BAR_W # Width of a single generator item (icon + bar)
+        INTER_COLUMN_GAP = 70 # Gap between the two columns of generators
+        TOTAL_COLUMNS_WIDTH = 2 * COLUMN_WIDTH + INTER_COLUMN_GAP # Total width occupied by the two columns
+        MARGIN_X = (CONTENT_WIDTH - TOTAL_COLUMNS_WIDTH) // 2 # Horizontal margin to centre the columns in the content area
+        LEFT_COL_X = NAV_BAR_WIDTH + MARGIN_X # Starting X for the left column of generators
+        RIGHT_COL_X = LEFT_COL_X + COLUMN_WIDTH + INTER_COLUMN_GAP # Starting X for the right column of generators
         
         for g_id, proto in GENERATOR_PROTOTYPES.items():
             col_x = LEFT_COL_X  if idx % 2 == 0 else RIGHT_COL_X
             row_y = 180 + (idx//2) * ROW_HEIGHT
-            bar_x = col_x + ICON_SIZE + 30
+            bar_x = col_x + ICON_SIZE
             self.user.ensure_generator(g_id) # Ensure generator exists for display callbacks
             generator_obj = self.user.generators[g_id]
+            
 
             icon = CreateFrect(col_x, row_y, ICON_SIZE, ICON_SIZE,
-                               WHITE, id=f"icon_{g_id}",
+                               BEIGE, id=f"icon_{g_id}",
                                font=self.row_font, font_colour=BLACK,
-                               display=proto["name"][0]) 
+                               display=proto["name"][0], border_radius=5) 
 
             owned = CreateFrect(col_x+15, row_y+ICON_SIZE-10, 55, 24,
-                                LIGHT_GRAY,
+                                BEIGE,
                                 font=self.row_font, font_colour=BLACK,
                                 display_callback=lambda g=generator_obj:
                                     f"{g.amount}", border_radius=15)
 
             
             rev_bar = CreateFrect(bar_x, row_y+10, BAR_W, BAR_H,
-                                  WHITE,
+                                  BEIGE,
                                   font=self.row_font, font_colour=BLACK,
                                   display_callback=lambda g=generator_obj:
-                                      f"{format_large_number(g.cycle_output)} per cycle") # Show cycle output
+                                      f"{format_large_number(g.cycle_output)} per cycle", border_radius=2) # Show cycle output
             
-            buy_btn = Button(bar_x+10, row_y+ICON_SIZE-10, 180, 32,
+            buy_btn = Button(bar_x+10 - 1, row_y+ICON_SIZE-10, 180, 32,
                              "",
                              GRAY, self.row_font, BLACK,
                              callback=lambda current_gid=g_id: (
@@ -254,7 +254,7 @@ class GameMenu:
             time_display_height = 32
 
             time_rect = CreateFrect(time_display_x, time_display_y, time_display_width, time_display_height,
-                                    LIGHT_GRAY,
+                                    BEIGE,
                                     font=self.time_display_font, font_colour=BLACK,
                                     display_callback=lambda g=generator_obj, u=self.user: (
                                         f"{g.time_progress:.1f}s" if g.is_generating else f"{g.get_effective_time(u.generators):.1f}s"),border_radius=15,
@@ -273,11 +273,11 @@ class GameMenu:
     
     def create_nav_column(self):
         btns = []
-        start_y = 180
+        start_y = 240
         spacing = 80
         items = [
         ("Managers",  lambda: self.open_panel("shop")),
-        ("Unlocks",   lambda: self.open_panel("upgrades")),
+        ("Upgrades",   lambda: self.open_panel("upgrades")),
         ("Settings",  lambda: self.open_settings_panel()), # Changed to call new method
         ("Help",      lambda: self.open_help_panel()),
         ("Exit",      self.save_and_exit),
@@ -373,14 +373,16 @@ class GameMenu:
         for element in self.hud_elems.values():
             element.draw(self.screen)
 
-        for r in self.rows:
+        for r in self.rows: # icon < owned < rev < buy < time_display to ensure correct layering
             r["icon"].draw(self.screen)
             r["owned"].draw(self.screen)
             r["rev"].draw(self.screen)
             r["buy"].draw(self.screen)
             r["time_display"].draw(self.screen) # Draw the new time display
-            
+        
+        self.profile_pic_background.draw(self.screen)
         self.profile_pic.draw(self.screen)
+        self.user_name.draw(self.screen)
         for nav_button in self.nav_buttons:
             nav_button.draw(self.screen)
             
@@ -406,14 +408,14 @@ class GameMenu:
         for idx, (gid, mproto) in enumerate(MANAGER_PROTOTYPES.items()):
             y = y0 + idx*row_h
             name_frect = CreateFrect(
-                220, y, 260, 40, bg_colour=WHITE,
+                220, y, 260, 40, bg_colour=BEIGE,
                 font=self.row_font, font_colour=BLACK,
-                display=mproto["name"]
+                display=f"{mproto["name"]}", border_radius=15
             )
             cost_frect = CreateFrect(
-                500, y, 160, 40, bg_colour=WHITE,
+                500, y, 160, 40, bg_colour=BEIGE,
                 font=self.row_font, font_colour=BLACK,
-                display_callback=lambda mp=mproto: format_large_number(mp["cost"])
+                display_callback=lambda mp=mproto: format_large_number(mp["cost"]), border_radius=15
             )
             buy_btn = Button(
                 700, y, 120, 40, "Buy", GRAY, self.row_font, BLACK,
@@ -525,17 +527,17 @@ class SettingsMenu:
         volume_display_width_val   = 80  
         volume_label_width_val     = self.item_font.size("Volume:")[0]
         spacing_val                = 15  
-        half_offset                = (button_width_small - volume_display_width_val) // 2
+        half_offset                = (button_width_small - volume_display_width_val) // 2 # For centering the volume display in its slot
 
 
-        group_width_buttons = button_width_small * 3 + spacing_val * 2      
-        start_x             = (SCREEN_WIDTH - group_width_buttons) // 2      
+        group_width_buttons = button_width_small * 3 + spacing_val * 2      # Total width for the volume control group (-, display, +)
+        start_x             = (SCREEN_WIDTH - group_width_buttons) // 2      # Starting X to horizontally center the group
 
-        vol_down_x     = start_x
-        vol_display_x  = start_x + button_width_small + spacing_val + half_offset
-        vol_up_x       = start_x + (button_width_small + spacing_val) * 2
+        vol_down_x     = start_x # X for the volume down button
+        vol_display_x  = start_x + button_width_small + spacing_val + half_offset # X for volume percentage display
+        vol_up_x       = start_x + (button_width_small + spacing_val) * 2 # X for the volume up button
 
-        volume_label_x = vol_down_x - spacing_val - volume_label_width_val
+        volume_label_x = vol_down_x - spacing_val - volume_label_width_val # X for "Volume:" label, to the left of controls
 
         elements["volume_label"] = CreateFrect(
             volume_label_x, volume_elements_y_base + volume_label_y_offset,
@@ -558,15 +560,13 @@ class SettingsMenu:
         buttons = []
         button_width_small = 100
         button_height_small = 45
-
-        # Playback Buttons – centred horizontally
         playback_y = 220
         group_spacing = 15
-        group_width = button_width_small * 3 + group_spacing * 2 # 3 buttons + 2 spaces between
-        start_x = (SCREEN_WIDTH - group_width) // 2
-        rewind_x = start_x
-        pause_x  = rewind_x + button_width_small + group_spacing
-        skip_x   = pause_x + button_width_small + group_spacing
+        group_width = button_width_small * 3 + group_spacing * 2 # Total width for the three playback buttons and spacing
+        start_x = (SCREEN_WIDTH - group_width) // 2 # Starting X to horizontally center the group
+        rewind_x = start_x # X for the rewind button
+        pause_x  = rewind_x + button_width_small + group_spacing # X for the pause/play button
+        skip_x   = pause_x + button_width_small + group_spacing # X for the skip button
 
         buttons.append(Button( # Rewind
             rewind_x, playback_y, button_width_small, button_height_small,
@@ -590,11 +590,11 @@ class SettingsMenu:
         volume_buttons_y = 300
         half_offset = (button_width_small - 80) // 2  
 
-        group_width_buttons = button_width_small * 3 + group_spacing * 2
-        start_x             = (SCREEN_WIDTH - group_width_buttons) // 2 
+        group_width_buttons = button_width_small * 3 + group_spacing * 2 # Same as playback group for alignment
+        start_x             = (SCREEN_WIDTH - group_width_buttons) // 2 # Recalculating for clarity, centers the volume buttons
 
-        vol_down_x = start_x
-        vol_up_x   = start_x + (button_width_small + group_spacing) * 2
+        vol_down_x = start_x # X for volume down, aligns with rewind
+        vol_up_x   = start_x + (button_width_small + group_spacing) * 2 # X for volume up, aligns with skip
 
         buttons.append(Button( # Volume Down
             vol_down_x, volume_buttons_y, button_width_small, button_height_small,

@@ -14,24 +14,61 @@ class Button: # global button class
                  font: pygame.font.Font, text_colour: Tuple[int, int, int], 
                  callback=None, display_callback=None, icon_image=None, button_id=str, border_radius=30): # callback is a function that is called when the button is clicked
         self.rect = pygame.Rect(x, y, width, height)
+        self.rect_shadow = pygame.Rect(x+2, y+4, width, height)
         self.text = text
-        self.colour: Tuple[int, int, int] = colour
-        self.initial_colour: Tuple[int, int, int] = colour
+        self.colour = BUTTON_UNPRESSED_COLOUR
+        self.initial_colour = BUTTON_UNPRESSED_COLOUR
+        self.shadow_colour = BUTTON_SHADOW_COLOUR
         self.font = font
-        self.text_colour = text_colour
+        self.text_colour = WHITE
         self.callback = callback # calls a pre-defined function when a button is clicked, encapsulates button actions inside the button class itself
         self.display_callback = display_callback # for displays requiring dynamic updates
         self.id = button_id # unique identifier
         self.icon_image = icon_image  # Optional icon image for the button
+        self.hover_icon_image = None
+        if self.icon_image:
+            self.create_hover_icon()
         self.border_radius = border_radius
+
+    def create_hover_icon(self): # creates a greyed-out version of the icon for hover effects
+        if self.icon_image:
+            self.hover_icon_image = self.icon_image.copy()
+            self.hover_icon_image.fill(GRAY, special_flags=pygame.BLEND_RGB_MULT)
 
     def draw(self, screen: pygame.Surface): # draws the button on the screen
         if self.display_callback: # if display_callback is set, use it to get the text.
             self.text = self.display_callback()
+        pygame.draw.rect(screen, self.shadow_colour, self.rect_shadow, border_radius=self.border_radius) # draw the shadow
         pygame.draw.rect(screen, self.colour, self.rect, border_radius=self.border_radius) # draw the button
-        text_surf = self.font.render(self.text, True, self.text_colour) # render the text
-        text_rect = text_surf.get_rect(center=self.rect.center) # get the rect of the text
-        screen.blit(text_surf, text_rect) # blit the text on the button
+        
+        text_surf = self.font.render(self.text, True, self.text_colour)
+        text_rect = text_surf.get_rect()
+
+        if self.icon_image:
+            is_hovered = self.is_hovered(pygame.mouse.get_pos())
+            current_icon = self.hover_icon_image if is_hovered and self.hover_icon_image else self.icon_image
+            icon_rect = current_icon.get_rect()
+
+            if self.text:
+                padding = 5
+                total_width = icon_rect.width + padding + text_rect.width
+                
+                start_x = self.rect.centerx - total_width // 2
+                
+                icon_rect.x = start_x
+                icon_rect.centery = self.rect.centery
+                
+                text_rect.x = icon_rect.right + padding
+                text_rect.centery = self.rect.centery
+
+                screen.blit(current_icon, icon_rect)
+                screen.blit(text_surf, text_rect)
+            else:
+                icon_rect.center = self.rect.center
+                screen.blit(current_icon, icon_rect)
+        elif self.text:
+            text_rect.center = self.rect.center
+            screen.blit(text_surf, text_rect)
     
     def is_hovered(self, pos): # checks if the mouse is hovering over any rect
         return self.rect.collidepoint(pos) 
@@ -44,7 +81,8 @@ class Button: # global button class
 
     def animations(self, pos):
         """Handles button animations, e.g. hover effects, click effects, etc."""
-        self.colour = DARK_GRAY if self.is_hovered(pos) else self.initial_colour  # Change colour on hover
+        self.colour = BUTTON_HOVER_COLOUR if self.is_hovered(pos) else self.initial_colour  # Change colour on hover
+        self.text_colour = GRAY if self.is_hovered(pos) else WHITE
         # TODO: possibly add more animations like click effects, etc?
 
 class NavButton(Button):
@@ -55,7 +93,9 @@ class NavButton(Button):
     def __init__(self, y, text, callback):
         super().__init__(
             5, y, self.WIDTH, self.HEIGHT, text, self.BG, DEFAULT_FONT, self.FG, callback=callback, border_radius=15 # Standardised border radius for NavButtons
+            
         )
+
             
 class CreateFrect:
     """ Handles creation of frects for static/dynamic displays of text, or ui elements around screens.
@@ -63,7 +103,7 @@ class CreateFrect:
     
     
     """
-    def __init__(self, x, y, width, height, bg_colour=None, id=None, display=None, font=None, font_colour=None, image=None, display_callback=None, border_radius=0):
+    def __init__(self, x, y, width, height, bg_colour=None, id=None, display=None, font=None, font_colour=None, image=None, display_callback=None, border_radius=0, click_effect = None):
         self.frect = pygame.FRect(x, y, width, height)
         self.bg_colour = bg_colour
         self.image = None
@@ -74,6 +114,7 @@ class CreateFrect:
         self.display_callback = display_callback # for displays requiring dynamic updates
         self.image = image
         self.border_radius = border_radius # Added border_radius
+        self.click_effect = click_effect # for frects requiring a click effect
 
     def render_text(self, position="center", display=None): # render text inside the frect
         position_bank = {

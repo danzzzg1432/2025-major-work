@@ -1,75 +1,75 @@
 {
     "user_data": {
-        "money": 5777325160.0,
+        "money": 197440996188.0,
         "generators": [
             {
                 "id": "g1",
-                "level": 8,
-                "amount": 175,
-                "time_progress": 0.040999999999999745,
+                "level": 32,
+                "amount": 201,
+                "time_progress": 0.01875,
                 "is_generating": true
             },
             {
                 "id": "g2",
-                "level": 4,
-                "amount": 70,
-                "time_progress": 0.3580000000000001,
+                "level": 8,
+                "amount": 76,
+                "time_progress": 0.06899999999995998,
                 "is_generating": true
             },
             {
                 "id": "g3",
-                "level": 4,
+                "level": 8,
                 "amount": 63,
-                "time_progress": 0.3580000000000001,
+                "time_progress": 0.20499999999992724,
                 "is_generating": true
             },
             {
                 "id": "g4",
-                "level": 4,
+                "level": 8,
                 "amount": 64,
-                "time_progress": 0.3280000000000016,
+                "time_progress": 0.7719999999999345,
                 "is_generating": true
             },
             {
                 "id": "g5",
-                "level": 2,
-                "amount": 36,
-                "time_progress": 4.876890000000026,
+                "level": 8,
+                "amount": 54,
+                "time_progress": 1.0270000000000437,
                 "is_generating": true
             },
             {
                 "id": "g6",
-                "level": 2,
-                "amount": 29,
-                "time_progress": 1.2534819999997895,
+                "level": 8,
+                "amount": 50,
+                "time_progress": 3.199000000000069,
                 "is_generating": true
             },
             {
                 "id": "g7",
-                "level": 2,
-                "amount": 28,
-                "time_progress": 1.6604820000112692,
+                "level": 8,
+                "amount": 50,
+                "time_progress": 22.30099999999993,
                 "is_generating": true
             },
             {
                 "id": "g8",
-                "level": 1,
-                "amount": 23,
-                "time_progress": 960.4238439981976,
+                "level": 8,
+                "amount": 50,
+                "time_progress": 162.9090000000001,
                 "is_generating": true
             },
             {
                 "id": "g9",
-                "level": 1,
-                "amount": 15,
-                "time_progress": 4759.564729013761,
+                "level": 8,
+                "amount": 50,
+                "time_progress": 121.89899999999989,
                 "is_generating": true
             },
             {
                 "id": "g0",
-                "level": 1,
-                "amount": 3,
-                "time_progress": 23199.360729091357,
+                "level": 4,
+                "amount": 31,
+                "time_progress": 30081.66600718949,
                 "is_generating": true
             }
         ],
@@ -106,9 +106,9 @@
             }
         ]
     },
-    "save_time": "2025-06-06T05:50:16.055466+00:00",
     "music_data": {
-        "volume": 0.45,
-        "is_paused": false
-    }
+        "volume": 0.10000000000000007,
+        "is_paused": true
+    },
+    "save_time": "2025-06-06T14:13:03.719283+00:00"
 }

@@ -84,7 +84,7 @@ class Music:
     """
     Music playback with volume, shuffling, playback controls and other stuff
     """
-    def __init__(self, volume=0.05):
+    def __init__(self, volume=0.05, start_playing=True):
         self.playlist = self.load_playlist()
         self.current_song_index = 0
         self.volume = volume
@@ -93,7 +93,8 @@ class Music:
 
         if self.playlist:
             random.shuffle(self.playlist)
-            self.play_current_song()
+            if start_playing:
+                self.play_current_song()
         else:
             if DEBUG_MODE:
                 print("Warning: No music files found in assets/sounds or directory missing.")
@@ -186,9 +187,19 @@ class Music:
     
     @classmethod
     def from_dict(cls, data):
-        instance = cls()
-        instance.volume = data.get("volume", 0.50)
+        instance = cls(volume=data.get("volume", 0.50), start_playing=False)
         instance.is_paused = data.get("is_paused", False)
+
+        if instance.playlist:
+            if not instance.is_paused:
+                instance.play_current_song()
+            else:
+                # If paused, just load the song so it's ready to play
+                try:
+                    pygame.mixer.music.load(instance.playlist[instance.current_song_index])
+                except pygame.error as e:
+                    if DEBUG_MODE:
+                        print(f"Error loading music {instance.playlist[instance.current_song_index]}: {e}")
         return instance
 
 

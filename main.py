@@ -5,7 +5,7 @@ from game_logic import *  # Import game logic classes
 from ui_elements import *  # Import UI classes
 from game_states import *  # Import game states
 from save_loads import *  # Import save/load functions
-from utils import Music, simulate_offline_progress # Import the new Music class
+from utils import Music, simulate_offline_progress 
 
 # Import sys and time
 import sys 
@@ -15,6 +15,7 @@ import time
 pygame.init()
 pygame.mixer.init()
 screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+
 
 try:
     if DEBUG_MODE:

@@ -50,6 +50,8 @@ class SaveStates:
         music_data = data["music_data"]
         return Music.from_dict(music_data)
     
+    
+    
     @staticmethod 
     def time_elapsed() -> float:
         path = SaveStates.get_path()
