@@ -2,6 +2,8 @@
 
 This repository contains the code for *Idle Tutor Tycoon*, a Python/PyGame based idle/tycoon style game built as part of my 2025 Major Work for the HSC Software Engineering course.
 
+If you decide to download and run the game, please consider providing [feedback](https://docs.google.com/forms/d/1S49IZXE-VYq69Yd1FltCkhzX_Bd-nV-thi6cPYWUfZU/edit)
+
 ## Prerequisites
 
 - **Python 3.8+** – the game has been tested with Python 3.11, 3.12 and 3.13.
@@ -69,8 +71,14 @@ This project was developed for educational purposes. Refer to the repository for
 
 ## Credits
 All music credits go to [NoCopyrightSounds](https://ncs.io) and their respective artists.
+
 Button click sound credit goes to Rhodesmas; you may find them [here](https://freesound.org/people/rhodesmas/sounds/380291/)
 
 A massive thank you to the [AdCap Wiki](https://adventure-capitalist.fandom.com/wiki/AdVenture_Capitalist_Wiki) as well. 
 
+Flaticon icons:
+t-rex
+pocike
+Freepik
+textstudio.com
 
