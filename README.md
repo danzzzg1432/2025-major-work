@@ -2,7 +2,7 @@
 
 This repository contains the code for *Idle Tutor Tycoon*, a Python/PyGame based idle/tycoon style game built as part of my 2025 Major Work for the HSC Software Engineering course.
 
-If you decide to download and run the game, please consider providing [feedback](https://docs.google.com/forms/d/1S49IZXE-VYq69Yd1FltCkhzX_Bd-nV-thi6cPYWUfZU/edit)
+If you decide to download and run the game, please consider providing [feedback](https://forms.gle/2QGpXSdpPDwUaMZD6)
 
 ## Prerequisites
 
