@@ -1,33 +1,33 @@
 {
     "user_data": {
-        "money": 624517.0,
+        "money": 2991470456.0,
         "generators": [
             {
                 "id": "g1",
-                "level": 4,
-                "amount": 66,
-                "time_progress": 0.15,
+                "level": 8,
+                "amount": 174,
+                "time_progress": 0.075,
                 "is_generating": true,
-                "revenue_multiplier": 1,
-                "revenue_multiplier_purchases": 0
+                "revenue_multiplier": 10,
+                "revenue_multiplier_purchases": 1
             },
             {
                 "id": "g2",
                 "level": 2,
-                "amount": 27,
-                "time_progress": 1.0430000000000064,
+                "amount": 40,
+                "time_progress": 0.7409999999999854,
                 "is_generating": true,
-                "revenue_multiplier": 1,
-                "revenue_multiplier_purchases": 0
+                "revenue_multiplier": 10,
+                "revenue_multiplier_purchases": 1
             },
             {
                 "id": "g3",
-                "level": 1,
-                "amount": 6,
-                "time_progress": -0.0049999999999954525,
-                "is_generating": false,
-                "revenue_multiplier": 1,
-                "revenue_multiplier_purchases": 0
+                "level": 8,
+                "amount": 120,
+                "time_progress": 0.75,
+                "is_generating": true,
+                "revenue_multiplier": 10,
+                "revenue_multiplier_purchases": 1
             },
             {
                 "id": "g4",
@@ -35,31 +35,31 @@
                 "amount": 0,
                 "time_progress": 0.0,
                 "is_generating": false,
-                "revenue_multiplier": 1,
-                "revenue_multiplier_purchases": 0
+                "revenue_multiplier": 10,
+                "revenue_multiplier_purchases": 1
             },
             {
                 "id": "g5",
-                "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false,
-                "revenue_multiplier": 1,
-                "revenue_multiplier_purchases": 0
+                "level": 8,
+                "amount": 131,
+                "time_progress": 2.2409999999999854,
+                "is_generating": true,
+                "revenue_multiplier": 10,
+                "revenue_multiplier_purchases": 1
             },
             {
                 "id": "g6",
-                "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false,
-                "revenue_multiplier": 1,
-                "revenue_multiplier_purchases": 0
+                "level": 4,
+                "amount": 56,
+                "time_progress": 12.384000000000015,
+                "is_generating": true,
+                "revenue_multiplier": 10,
+                "revenue_multiplier_purchases": 1
             },
             {
                 "id": "g7",
                 "level": 1,
-                "amount": 0,
+                "amount": 6,
                 "time_progress": 0.0,
                 "is_generating": false,
                 "revenue_multiplier": 1,
@@ -77,7 +77,7 @@
             {
                 "id": "g9",
                 "level": 1,
-                "amount": 0,
+                "amount": 1,
                 "time_progress": 0.0,
                 "is_generating": false,
                 "revenue_multiplier": 1,
@@ -98,6 +98,15 @@
                 "id": "g1"
             },
             {
+                "id": "g3"
+            },
+            {
+                "id": "g5"
+            },
+            {
+                "id": "g6"
+            },
+            {
                 "id": "g2"
             }
         ],
@@ -105,13 +114,13 @@
             "first_generator": true,
             "first_manual_generation": true,
             "first_manager": true,
-            "first_upgrade": false,
+            "first_upgrade": true,
             "help_menu_opened": false
         }
     },
     "music_data": {
-        "volume": 6.938893903907228e-17,
+        "volume": 0.5,
         "is_paused": false
     },
-    "save_time": "2025-06-13T07:18:49.142477+00:00"
+    "save_time": "2025-06-12T23:37:19.812690+00:00"
 }

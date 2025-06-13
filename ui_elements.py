@@ -77,7 +77,8 @@ class Button: # global button class
         """Calls the callback function when the button is clicked"""
         BUTTON_PRESS_SOUND.play() # play the button press sound
         if self.callback:
-            self.callback() 
+            return self.callback() 
+        return None
 
     def animations(self, pos):
         """Handles button animations, e.g. hover effects, click effects, etc."""
@@ -164,11 +165,9 @@ class CreateFrect:
                 pygame.draw.rect(screen, self.shadow_colour, self.frect_shadow, border_radius=self.border_radius)
             pygame.draw.rect(screen, self.bg_colour, self.frect, border_radius=self.border_radius) # Use border_radius here
         if self.image:
-            # If image is present, typically you wouldn't draw the bg_colour rect unless image has transparency
-            # and you want a solid bg behind it. For now, let's assume image takes priority or is drawn over.
-            # If bg_colour is None and image exists, this is fine.
-            # If both exist, current logic draws rect then image over it.
-            screen.blit(self.image, self.frect)
+            # Centre the image within the frect
+            image_rect = self.image.get_rect(center=self.frect.center)
+            screen.blit(self.image, image_rect)
 
         # render text if applicable
         text_surface, text_rect = self.render_text()

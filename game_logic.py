@@ -1,6 +1,6 @@
 from game_constants import *
 
-def apply_upgrades(user, generator_id_that_triggered_check):
+def apply_upgrades(user):
     """
     Calculates and updates levels for ALL generators based on their specific
     and the current global upgrade tiers with stacking multipliers
@@ -12,7 +12,7 @@ def apply_upgrades(user, generator_id_that_triggered_check):
             highest_achieved_global_multiplier = max(highest_achieved_global_multiplier, mult_global)
 
     # Update each generator's level based on its specific upgrades and the global multiplier
-    for gen_id, gen_obj in user.generators.items():
+    for gen_id, gen_obj in user.generators.items(): # loop through each generator
         # Determine the highest applicable specific multiplier for this generator
         specific_multiplier_for_this_gen = 1  
         for thresh_specific, mult_specific in GENERATOR_UPGRADES.get(gen_id, []):
@@ -29,7 +29,7 @@ class Generator:
     Represents the money-generating entity in the game. 
     
     """
-    def __init__(self, id, name, base_rate, base_price, base_time, level=1, amount=0, growth_rate=1.07, time_progress=0.0, is_generating=False):
+    def __init__(self, id, name, base_rate, base_price, base_time, level=1, amount=0, growth_rate=1.07, time_progress=0.0, is_generating=False, revenue_multiplier=1, revenue_multiplier_purchases=0):
         self.id = id
         self.base_rate = base_rate # rate of money generation per cycle
         self.name = name
@@ -40,7 +40,8 @@ class Generator:
         self.growth_rate = growth_rate # multiplier for price
         self.time_progress = time_progress  # Remaining time for the current cycle
         self.is_generating = is_generating  # True if currently in a generation cycle
-        self.reductions = 1 # number of reductions applied to the generator (future feature)
+        self.revenue_multiplier = revenue_multiplier
+        self.revenue_multiplier_purchases = revenue_multiplier_purchases
 
     def get_effective_time(self, all_user_generators):
         """Calculates the effective time for a generation cycle after milestone reductions."""
@@ -65,11 +66,11 @@ class Generator:
             self.is_generating = True
 
     def update(self, dt_seconds, user):
-        """Updates the generator's time progress and handles cycle completion."""
+        """Updates the generator's time progress and handles cycle completion and generates the money."""
         if self.is_generating and self.amount > 0:
             self.time_progress -= dt_seconds
             if self.time_progress <= 0:
-                money_generated = self.base_rate * self.level * self.amount
+                money_generated = self.base_rate * self.level * self.amount * self.revenue_multiplier
                 user.money += money_generated
                 self.is_generating = False # Cycle complete
                 # If managed, automatically restart the cycle
@@ -84,19 +85,19 @@ class Generator:
         # If its already generating (e.g. by manager), manual click does nothing extra for this cycle
         if not self.is_generating:
             self.start_generation_cycle(user.generators)
-        return self.base_rate * self.level * self.amount # Return potential amount if ever needed
+        return self.base_rate * self.level * self.amount * self.revenue_multiplier # Return potential amount if ever needed
     
     @property
     def cycle_output(self):
         """Money generated per completed cycle."""
-        return self.base_rate * self.amount * self.level
+        return self.base_rate * self.amount * self.level * self.revenue_multiplier
 
     @property
     def rate(self):
         """Effective rate of money generation per second, considering cycle time."""
         if self.amount == 0:
             return 0
-        effective_time = self.get_effective_time({}) # Pass empty dict if no access to all generators, or rethink
+        effective_time = self.get_effective_time({})
         if effective_time == 0: # Avoid division by zero
              return float('inf') # Or some large number, or handle as an error
         return self.cycle_output / effective_time
@@ -109,17 +110,32 @@ class Generator:
         a = self.base_price * (self.growth_rate ** self.amount)
         n = quantity
         if self.growth_rate != 1:
-            total_cost = int(a * self.reductions * (1 - (self.growth_rate)**n) / (1 - (self.growth_rate))) # geometric series sum formula. if you need me to prove this, ask me
+            total_cost = int(a * (1 - (self.growth_rate)**n) / (1 - (self.growth_rate))) # geometric series sum formula. if you need me to prove this, ask me
         else:
             total_cost = int(a * n)
         if user.money >= total_cost:
             user.money -= total_cost
             self.amount += quantity
             if user:
-                apply_upgrades(user, self.id)
-            # If it's the first purchase and not managed, start the first cycle
-            # if self.amount == quantity and not self.is_generating and self.id not in user.managers:
-            #     self.start_generation_cycle(user.generators) 
+                apply_upgrades(user)
+            return True
+        return False
+
+    def get_next_revenue_multiplier_price(self):
+        base_price = REVENUE_MULTIPLIER_BASE_PRICES[self.id]
+        price = base_price * (REVENUE_MULTIPLIER_GROWTH_FACTOR ** self.revenue_multiplier_purchases)
+        return price
+
+    def buy_revenue_multiplier(self, user):
+        cost = self.get_next_revenue_multiplier_price()
+        if self.id not in user.generators:
+            return False
+        if user.money >= cost:
+            user.money -= cost
+            self.revenue_multiplier *= 10
+            self.revenue_multiplier_purchases += 1
+            return True
+        return False
 
     def to_dict(self):
         return { 
@@ -128,6 +144,8 @@ class Generator:
                 "amount": self.amount,
                 "time_progress": self.time_progress,
                 "is_generating": self.is_generating,
+                "revenue_multiplier": self.revenue_multiplier,
+                "revenue_multiplier_purchases": self.revenue_multiplier_purchases,
                 }
     
     @classmethod
@@ -143,7 +161,9 @@ class Generator:
             amount=data.get("amount", 0), # default to 0
             growth_rate=proto["growth_rate"],
             time_progress=data.get("time_progress", 0.0), # default to 0.0
-            is_generating=data.get("is_generating", False) # default to False
+            is_generating=data.get("is_generating", False), # default to False
+            revenue_multiplier=data.get("revenue_multiplier", 1),
+            revenue_multiplier_purchases=data.get("revenue_multiplier_purchases", 0)
         )
         
 class Manager:
@@ -179,14 +199,21 @@ class User:
         self.generators = {}
         self.money = float(money)
         self.managers = {} 
+        self.tutorial_state = {"first_generator": False, "first_manual_generation": False, "first_manager": False, "first_upgrade": False, "help_menu_opened": False} # Tracks the player's progress through the tutorial
         
     def manual_generate(self, generator_id):
         self.ensure_generator(generator_id)
+        # Check and update the tutorial state for the first manual generation.
+        if generator_id == "g1" and self.tutorial_state.get("first_generator") and not self.tutorial_state.get("first_manual_generation"):
+            self.tutorial_state["first_manual_generation"] = True
         return self.generators[generator_id].manual_generate(self)
     
     def buy_generator(self, generator_id, quantity=1):
         self.ensure_generator(generator_id)
-        self.generators[generator_id].buy(self, quantity)
+        if self.generators[generator_id].buy(self, quantity):
+            # If the first generator is bought, update the tutorial state.
+            if generator_id == "g1" and not self.tutorial_state.get("first_generator"):
+                self.tutorial_state["first_generator"] = True
         
     def ensure_generator(self, generator_id):
         if generator_id not in self.generators:
@@ -207,20 +234,27 @@ class User:
         target_manager_proto = MANAGER_PROTOTYPES[manager_id]
         target_manager = Manager(manager_id, target_manager_proto["name"], target_manager_proto["cost"])
         if target_manager.buy(self):
-            # If manager bought, and generator exists and has items, start its cycle if not already running
-            # if manager_id in self.generators and self.generators[manager_id].amount > 0 and not self.generators[manager_id].is_generating:
-            #      self.generators[manager_id].start_generation_cycle(self.generators)
-            # print(f"purchase of {manager_id} was successful") if DEBUG_MODE else None
+            # If the first manager is bought, update the tutorial state.
+            if manager_id == "g1" and not self.tutorial_state.get("first_manager"):
+                self.tutorial_state["first_manager"] = True
             return True
         else:
             print(f"purchase of {manager_id} was failed") if DEBUG_MODE else None
             return False
         
+    def buy_generator_revenue_multiplier(self, generator_id):
+        self.ensure_generator(generator_id)
+        if self.generators[generator_id].buy_revenue_multiplier(self):
+            # If the first upgrade is bought, update the tutorial state.
+            if generator_id == "g1" and not self.tutorial_state.get("first_upgrade"):
+                self.tutorial_state["first_upgrade"] = True
+            return True
+        return False
+
     def update(self, dt_seconds):
-        for gen_id, gen in self.generators.items():
+        for gen_id_placeholder, gen in self.generators.items():
             gen.update(dt_seconds, self) # Call generator's own update method
-            # Manager logic is now handled within Generator.update and Manager.buy
-    
+            
     @property 
     def income_per_second(self):
         total_income_rate = 0.0
@@ -229,7 +263,7 @@ class User:
                 # Calculate rate based on cycle output and effective time
                 effective_time = gen.get_effective_time(self.generators)
                 if effective_time > 0: 
-                    total_income_rate += (gen.base_rate * gen.level * gen.amount) / effective_time
+                    total_income_rate += (gen.base_rate * gen.level * gen.amount * gen.revenue_multiplier) / effective_time
         return total_income_rate
     
     def to_dict(self):
@@ -237,6 +271,7 @@ class User:
             "money": self.money,
             "generators": [generator.to_dict() for generator in self.generators.values()],
             "managers": [manager.to_dict() for manager in self.managers.values()],
+            "tutorial_state": self.tutorial_state, # Save the tutorial state
         }
         
     def debug_generators(self):
@@ -251,6 +286,8 @@ class User:
     @classmethod
     def from_dict(cls, data):
         user = cls(data.get("money", 0.0))
+        # Load the tutorial state
+        user.tutorial_state = data.get("tutorial_state", {"first_generator": False, "first_manual_generation": False, "first_manager": False, "first_upgrade": False})
         for generator_data in data.get("generators", []):
             generator = Generator.from_dict(generator_data)
             user.generators[generator.id] = generator

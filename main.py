@@ -14,7 +14,6 @@ import time
 # Initialise PyGame, sound control and screen
 pygame.init()
 pygame.mixer.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 
 
 try:

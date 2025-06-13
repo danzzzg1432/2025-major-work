@@ -1,5 +1,6 @@
 import os
 import json
+import sys
 from game_logic import User
 from game_constants import *
 from date_time import *
@@ -13,10 +14,22 @@ class SaveStates:
     """
     @staticmethod
     def get_path():
-        save_directory = os.path.dirname(SAVE_DIR)
-        if save_directory and not os.path.exists(save_directory):
+        if getattr(sys, 'frozen', False):
+            # if running as a bundled executable
+            base_path = os.path.dirname(sys.executable)
+        else:
+            # if running as a script from the project root
+            base_path = os.path.abspath(".")
+
+        # construct the full path to the save file
+        full_save_path = os.path.join(base_path, SAVE_DIR)
+        save_directory = os.path.dirname(full_save_path)
+
+        # Ensure the save directory exists
+        if not os.path.exists(save_directory):
             os.makedirs(save_directory)
-        return SAVE_DIR
+            
+        return full_save_path
 
     @staticmethod
     def save_all(user, music_player):

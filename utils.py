@@ -1,13 +1,14 @@
 from game_constants import *
 from game_logic import User
+from ui_elements import CreateFrect
 import os
 import random
 import pygame
-import datetime
 
 def format_large_number(num):  
     """
-    The game has numbers in the vigintillions - aka 102 zeros (though reaching those values may take years). Trying to display that on the screen is a bit too much,
+    The game has numbers in the vigintillions - aka 102 zeros (though reaching those values may take years, millions of years...). 
+    Trying to display that on the screen is a bit too much,
     so this is a function that summarises the number.
     """
     if num < 1000:
@@ -35,6 +36,9 @@ def format_large_number(num):
         return f"{formatted_num}e{magnitude*3}" # if the number is too large, return it in scientific notation
  
 def simulate_offline_progress(user): # simulate offline progress for the user
+    """
+    Simulates the progress of the user's generators when the game is offline.
+    """
     from save_loads import SaveStates
     try: # Load user data from save file
         
@@ -42,39 +46,39 @@ def simulate_offline_progress(user): # simulate offline progress for the user
         print(f"\nTime elapsed when loading user {time_elapsed_offline}") if DEBUG_MODE else None
         lets_see = 0
         for gen_id, gen in user.generators.items():
-            if gen.amount > 0 and (gen.is_generating or gen.id in user.managers):
-                remaining_offline_time_for_gen = time_elapsed_offline
-                effective_time_for_cycle = gen.get_effective_time(user.generators)
+            if gen.amount > 0 and (gen.is_generating or gen.id in user.managers): # if the generator is owned and is generating or has a manager
+                remaining_offline_time_for_gen = time_elapsed_offline # the time elapsed since the last save
+                effective_time_for_cycle = gen.get_effective_time(user.generators) # the effective time for a cycle
 
                 if gen.is_generating: # Cycle was in progress
-                    if gen.time_progress <= remaining_offline_time_for_gen:
+                    if gen.time_progress <= remaining_offline_time_for_gen: # if the cycle was in progress and the time elapsed is greater than the time progress
                         user.money += gen.cycle_output # Add money for this completed cycle
-                        lets_see += gen.cycle_output
-                        remaining_offline_time_for_gen -= gen.time_progress
-                        gen.is_generating = False
+                        lets_see += gen.cycle_output # for debugging
+                        remaining_offline_time_for_gen -= gen.time_progress # subtract the time progress from the remaining time
+                        gen.is_generating = False # reset the generating state
                     else:
-                        gen.time_progress -= remaining_offline_time_for_gen
-                        remaining_offline_time_for_gen = 0
+                        gen.time_progress -= remaining_offline_time_for_gen # subtract the remaining time from the time progress
+                        remaining_offline_time_for_gen = 0 # reset the remaining time
                 
                 # If managed, or if a cycle just finished, and there's time left, run subsequent cycles
-                if (gen.id in user.managers or not gen.is_generating) and remaining_offline_time_for_gen > 0:
-                    if not gen.is_generating and gen.id in user.managers: # Start new cycle if managed and idle
-                        gen.start_generation_cycle(user.generators)
+                if (gen.id in user.managers or not gen.is_generating) and remaining_offline_time_for_gen > 0: # if the generator is managed or not generating and there is time left
+                    if not gen.is_generating and gen.id in user.managers: # if the generator is not generating and is managed
+                        gen.start_generation_cycle(user.generators) # start a new cycle
                     
-                    if gen.is_generating: # Check if it started or was already running and finished
-                        num_full_cycles_offline = int(remaining_offline_time_for_gen // effective_time_for_cycle)
-                        if num_full_cycles_offline > 0:
-                            user.money += gen.cycle_output * num_full_cycles_offline
-                            lets_see += gen.cycle_output * num_full_cycles_offline
-                            remaining_offline_time_for_gen -= num_full_cycles_offline * effective_time_for_cycle
+                    if gen.is_generating: # if the generator is generating
+                        num_full_cycles_offline = int(remaining_offline_time_for_gen // effective_time_for_cycle) # the number of full cycles that can be completed
+                        if num_full_cycles_offline > 0: # if there are full cycles
+                            user.money += gen.cycle_output * num_full_cycles_offline # add money for the full cycles
+                            lets_see += gen.cycle_output * num_full_cycles_offline # for debugging
+                            remaining_offline_time_for_gen -= num_full_cycles_offline * effective_time_for_cycle # subtract the effective time for the full cycles from the remaining time
                         
                         # Update progress of the current (potentially new) cycle
-                        if remaining_offline_time_for_gen > 0:
-                            gen.time_progress -= remaining_offline_time_for_gen
-                        else: # All time used up by full cycles
-                            gen.is_generating = False # Reset if it perfectly finished
-                            if gen.id in user.managers: # And restart if managed
-                                gen.start_generation_cycle(user.generators)
+                        if remaining_offline_time_for_gen > 0: # if there is time left
+                            gen.time_progress -= remaining_offline_time_for_gen # subtract the remaining time from the time progress
+                        else: # if all time used up by full cycles
+                            gen.is_generating = False # reset the generating state
+                            if gen.id in user.managers: # if the generator is managed   
+                                gen.start_generation_cycle(user.generators) # restart the cycle
         print(f"\nOffline progress added: ${lets_see} (simulated) ") if DEBUG_MODE else None
 
     except Exception as e:
@@ -103,12 +107,17 @@ class Music:
         """
         Loads music files from the specified music directory
         """
-        music_dir = os.path.join(ASSETS_DIR, "sounds")
+        music_dir = resource_path(os.path.join(ASSETS_DIR, "sounds"))
         supported_formats = ('.mp3') # Add other supported formats if needed
         playlist_files = []
-        for f_name in os.listdir(music_dir):
-            if f_name.lower().endswith(supported_formats):
-                playlist_files.append(os.path.join(music_dir, f_name))
+        try:
+            for f_name in os.listdir(music_dir):
+                if f_name.lower().endswith(supported_formats):
+                    playlist_files.append(os.path.join(music_dir, f_name))
+        except FileNotFoundError:
+            if DEBUG_MODE:
+                print(f"Music directory not found: {music_dir}")
+            return []
         
         if not playlist_files and DEBUG_MODE:
             print(f"No music files with supported formats found in {music_dir}")
@@ -203,3 +212,117 @@ class Music:
         return instance
 
 
+def tutorial_progress(user, screen, game_menu):
+    """
+    Handles the display of contextual tutorial hints to guide new players.
+
+    This function checks the user's tutorial progress state and displays arrows
+    and text to point them towards the next key action, such as buying their
+    first generator, generating manually, hiring a manager, or purchasing an upgrade.
+    
+    TODO:
+    (point to the help menu)
+    - explanation for timer
+    - explain the upgrades/unlocks system (i.e. when will the times halve)
+    
+    """
+    def draw_tutorial_hint(screen, target_rect, text, arrow_pos='left'):
+        """
+        Draws a tutorial arrow and text hint pointing to a specific UI element.
+        This is a helper function to keep the main tutorial logic cleaner.
+        """
+        arrow_img = tutorial_arrow # the arrow image
+        text_font = pygame.font.Font(LOGO_FONT, 22) 
+        text_surf_temp = text_font.render(text, True, WHITE) # render the text
+        text_rect_temp = text_surf_temp.get_rect() # get the rectangle of the text
+
+        hint_frect = CreateFrect(
+            x=0, y=0, width=text_rect_temp.width + 20,
+            height=text_rect_temp.height + 20, 
+            bg_colour=BLACK,
+            font=text_font,
+            font_colour=RED,
+            display=text
+            )
+        hint_frect.shadow_colour = None # no shadow for tutorial hints
+
+        # base arrow points right '->'
+        if arrow_pos == 'right':
+            # needs to point left '<-'
+            arrow_img = pygame.transform.flip(arrow_img, True, False)
+        elif arrow_pos == 'top':
+            # needs to point down 'v'
+            arrow_img = pygame.transform.rotate(arrow_img, -90)
+        elif arrow_pos == 'bottom':
+            # needs to point up '^'
+            arrow_img = pygame.transform.rotate(arrow_img, 90)
+
+        arrow_rect = arrow_img.get_rect() # get the rectangle of the arrow
+
+            # position hint and arrow
+        if arrow_pos == 'left': # if the arrow is pointing left
+            arrow_rect.right = target_rect.left - 10
+            arrow_rect.centery = target_rect.centery
+            hint_frect.frect.right = arrow_rect.left - 10
+            hint_frect.frect.centery = arrow_rect.centery
+        elif arrow_pos == 'right': # if the arrow is pointing right
+            arrow_rect.left = target_rect.right + 10
+            arrow_rect.centery = target_rect.centery
+            hint_frect.frect.left = arrow_rect.right + 10
+            hint_frect.frect.centery = arrow_rect.centery
+        
+        hint_frect.draw(screen)
+        screen.blit(arrow_img, arrow_rect)
+
+
+    # Stage 1: Guide the player to buy their first generator.
+    if not user.tutorial_state.get('first_generator'):
+        first_gen_proto = GENERATOR_PROTOTYPES['g1']
+        if user.money >= first_gen_proto['base_price'] and len(game_menu.rows) > 0:
+            if game_menu.active_panel is None:
+                first_gen_row = game_menu.rows[0]
+                buy_button_rect = first_gen_row['buy'].rect
+                # The first generator is on the left side, so point from the right.
+                draw_tutorial_hint(screen, buy_button_rect, "Buy your first student!", 'right')
+        return
+
+    # Stage 1.5: After buying the first generator, teach manual generation.
+    if user.tutorial_state.get('first_generator') and not user.tutorial_state.get('first_manual_generation'):
+        if game_menu.active_panel is None: # 
+            first_gen_row = game_menu.rows[0]
+            icon_rect = first_gen_row['icon'].frect
+            draw_tutorial_hint(screen, icon_rect, "Click on me to generate!", 'right')
+        return
+
+    # Stage 2: Once manual generation is understood, introduce managers for automation.
+    if user.tutorial_state.get('first_manual_generation') and not user.tutorial_state.get('first_manager'):
+        first_manager_proto = MANAGER_PROTOTYPES['g1']
+        # Check if the first generator is owned and the player can afford the manager.
+        if 'g1' in user.generators and user.generators['g1'].amount > 0 and user.money >= first_manager_proto['cost']:
+            if game_menu.active_panel != 'shop':
+                # If not in the shop, point to the 'Managers' navigation button.
+                manager_button = game_menu.nav_buttons[0] # 'Managers' button
+                draw_tutorial_hint(screen, manager_button.rect, "Automate with a manager!", 'right')
+            else:
+                # If in the shop, point to the buy button for the first manager.
+                first_manager_row = game_menu.shop_rows[0]
+                buy_button_rect = first_manager_row['btn'].rect
+                draw_tutorial_hint(screen, buy_button_rect, "Buy the first manager!", 'right')
+        return
+
+    # Stage 3: After the first manager, introduce upgrades to boost income.
+    if not user.tutorial_state.get('first_upgrade'):
+        if 'g1' in user.generators and user.generators['g1'].amount > 0:
+            first_upgrade_cost = user.generators['g1'].get_next_revenue_multiplier_price()
+            if user.money >= first_upgrade_cost:
+                if game_menu.active_panel != 'upgrades':
+                    # If not in the upgrades panel, point to the 'Upgrades' navigation button.
+                    upgrades_button = game_menu.nav_buttons[1] # 'Upgrades' button
+                    draw_tutorial_hint(screen, upgrades_button.rect, "Time to upgrade!", 'right')
+                else:
+                    # If in the upgrades panel, point to the first upgrade's buy button.
+                    first_upgrade_row = game_menu.upgrades_rows[0]
+                    buy_button_rect = first_upgrade_row['btn'].rect
+                    draw_tutorial_hint(screen, buy_button_rect, "Boost your income!", 'left')
+                    
+                    
