@@ -33,3 +33,4 @@ build/main/localpycs/struct.pyc
 build/main/xref-main.html
 main.spec
 .DS_Store
+savestates/save_data.json
