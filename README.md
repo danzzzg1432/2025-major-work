@@ -24,6 +24,13 @@ python -m ensurepip --upgrade
 ```
 ## Installing Dependencies
 
+
+**You must uninstall regular pygame first!**
+```bash
+pip uninstall pygame
+```
+
+
 The game relies on a few third‑party libraries:
 
 - [`pygame-ce`](https://pypi.org/project/pygame-ce/) – handling graphics, input and sound.
