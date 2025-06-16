@@ -1,12 +1,12 @@
 {
     "user_data": {
-        "money": 8397279.0,
+        "money": 12559758.0,
         "generators": [
             {
                 "id": "g1",
                 "level": 4,
-                "amount": 51,
-                "time_progress": 0.1150000000000034,
+                "amount": 53,
+                "time_progress": 0.13099999999999987,
                 "is_generating": true,
                 "revenue_multiplier": 10,
                 "revenue_multiplier_purchases": 1
@@ -24,8 +24,8 @@
                 "id": "g3",
                 "level": 1,
                 "amount": 11,
-                "time_progress": -0.8390000000000022,
-                "is_generating": false,
+                "time_progress": 2.9609999999999994,
+                "is_generating": true,
                 "revenue_multiplier": 1,
                 "revenue_multiplier_purchases": 0
             },
@@ -59,9 +59,9 @@
             {
                 "id": "g7",
                 "level": 1,
-                "amount": 0,
-                "time_progress": 0.0,
-                "is_generating": false,
+                "amount": 6,
+                "time_progress": 314.5297740000074,
+                "is_generating": true,
                 "revenue_multiplier": 1,
                 "revenue_multiplier_purchases": 0
             },
@@ -96,6 +96,9 @@
         "managers": [
             {
                 "id": "g1"
+            },
+            {
+                "id": "g3"
             }
         ],
         "tutorial_state": {
@@ -107,8 +110,8 @@
         }
     },
     "music_data": {
-        "volume": 6.938893903907228e-17,
-        "is_paused": false
+        "volume": 0.05,
+        "is_paused": true
     },
-    "save_time": "2025-06-16T00:22:12.372270+00:00"
+    "save_time": "2025-06-16T02:50:40.416794+00:00"
 }

@@ -213,9 +213,9 @@ class GameMenu:
             )
         }
 
-    def load_generator_icons(self, size=()):
+    def load_generator_icons(self, size=None):
         icons = {}
-        if size is ():
+        if size is None:
             size = (70, 70) # default large icon size
         for g_id in GENERATOR_PROTOTYPES:
             image_path = f"{IMAGES_DIR}/{g_id}.png"
@@ -458,6 +458,7 @@ class GameMenu:
             panel_bg.fill((0,0,0,200))
             self.screen.blit(panel_bg, (175,0))
             for r in self.upgrades_rows:
+                r["icon"].draw(self.screen)
                 r["name"].draw(self.screen)
                 r["level"].draw(self.screen)
                 r["price"].draw(self.screen)
@@ -465,7 +466,9 @@ class GameMenu:
                 r["money_display"].draw(self.screen)
                 r["income_display"].draw(self.screen)  
                 r["menu_name"].draw(self.screen)
-                r["multipler"].draw(self.screen)
+                # Only draw multiplier if it exists in this row (only first row)
+                if "multiplier" in r:
+                    r["multiplier"].draw(self.screen)
                 r["exit_menu_btn"].draw(self.screen)
         # draw the tutorial hints on top of everything else.
         tutorial_progress(self.user, self.screen, self)
@@ -476,37 +479,40 @@ class GameMenu:
     # shop menu ──────────────────────────────────────────────────────────
     def build_shop_menu(self):
         rows = []
-        y0, row_h = 150, 60
+        y0, row_h = 135, 65  
         
         # create the rows for the shop menu
         for idx, (gid, mproto) in enumerate(MANAGER_PROTOTYPES.items()):
             y = y0 + idx*row_h
             
+ 
+            icon_y = y + (50 - 45) // 2  
+
             icon_frect = CreateFrect(
-                220, y, 40, 40, bg_colour=BEIGE,
-                font=self.row_font, font_colour=BLACK,
-                display=f"{mproto["name"][0]}", border_radius=5
+                200, icon_y, 45, 45, bg_colour=WHITE, 
+                image=self.generator_icons.get(gid),
+                border_radius=10
             )
 
             name_frect = CreateFrect(
-                270, y, 260, 40, bg_colour=BEIGE,
+                270, y, 280, 50, bg_colour=BEIGE,
                 font=self.row_font, font_colour=BLACK,
                 display=f"{mproto["name"]}", border_radius=15
             )
             cost_frect = CreateFrect(
-                540, y, 160, 40, bg_colour=BEIGE,
+                570, y, 180, 50, bg_colour=BEIGE,
                 font=self.row_font, font_colour=BLACK,
                 display_callback=lambda mp=mproto: format_large_number(mp["cost"]), border_radius=15
             )
             buy_btn = Button(
-                710, y, 120, 40, "Buy", GRAY, self.row_font, BLACK,
+                770, y, 155, 50, "Buy", GRAY, self.row_font, WHITE,
                 callback=lambda current_gid=gid: self.user.buy_manager(current_gid),
                 display_callback=lambda current_gid=gid, mp=mproto, um=self.user.managers: (
                     "Owned" if current_gid in um else (
                         f"Buy {format_large_number(mp['cost'])}" if (current_gid in self.user.generators and self.user.generators[current_gid].amount > 0) 
                         else "Locked"
                     )
-                )
+                ), border_radius=15
             )
             exit_menu_btn = Button(
                 1100, 20, 60, 40, "Exit", GRAY, self.row_font, BLACK,
@@ -543,7 +549,7 @@ class GameMenu:
                 font_colour=WHITE,
                 display_callback=lambda: f"{format_large_number(self.user.income_per_second)}/s (avg revenue)"
             )
-            rows.append({
+            row_data = {
                 "icon": icon_frect,
                 "name": name_frect,
                 "cost": cost_frect,
@@ -552,62 +558,65 @@ class GameMenu:
                 "money_display": money_display,
                 "income_display": income_display,
                 "exit_menu_btn": exit_menu_btn
-            })
-                        
+            }
+            rows.append(row_data)
         return rows
     
     def build_upgrades_panel(self):
         rows = []
-        y0, row_h = 150, 55
-        x_start = 240
+        y0, row_h = 135, 65 
+        x_start = 270
+        
+        # Create the single x10 multiplier header at the top
+        multiplier = CreateFrect(
+            x_start + 700,  # Align with buy buttons
+            100,             
+            140,            
+            25,         
+            bg_colour=LIGHT_BLUE,
+            font=self.row_font,
+            font_colour=WHITE, 
+            display="x10 multiplier",
+            border_radius=15
+        )
         
         for idx, (gid, proto) in enumerate(GENERATOR_PROTOTYPES.items()):
             y = y0 + idx * row_h
             self.user.ensure_generator(gid)
             generator_obj = self.user.generators[gid]
             
+
+            icon_y = y + (50 - 45) // 2 
             icon_frect = CreateFrect(
-                x_start, y, 40, 40, bg_colour=None,
-                image=self.generator_icons[gid],
-                border_radius=5
+                200, icon_y, 45, 45, bg_colour=BLACK, 
+                image=self.generator_icons.get(gid),
+                border_radius=10
             )
 
             name_frect = CreateFrect(
-                x_start, y, 260, 40, bg_colour=BEIGE,
+                x_start, y, 280, 50, bg_colour=BEIGE,
                 font=self.row_font, font_colour=BLACK,
                 display=f"{proto['name']}", border_radius=15
             )
 
             multiplier_display = CreateFrect(
-                x_start + 280, y, 120, 40, bg_colour=BEIGE,
+                x_start + 300, y, 140, 50, bg_colour=BEIGE,
                 font=self.row_font, font_colour=BLACK,
                 display_callback=lambda g=generator_obj: f"x{format_large_number(g.level * g.revenue_multiplier)}",
                 border_radius=15
             )
 
             price_frect = CreateFrect(
-                x_start + 430, y, 200, 40, bg_colour=BEIGE,
+                x_start + 460, y, 220, 50, bg_colour=BEIGE,
                 font=self.row_font, font_colour=BLACK,
                 display_callback=lambda g=generator_obj: f"${format_large_number(g.get_next_revenue_multiplier_price())}",
                 border_radius=15
             )
 
-
             buy_multiplier = Button(
-                x_start + 650, y, 120, 40, "Buy x10", GRAY, self.row_font, BLACK,
+                x_start + 700, y, 140, 50, "Buy x10", GRAY, self.row_font, WHITE,
                 callback=lambda current_gid=gid, g=generator_obj: self.user.buy_generator_revenue_multiplier(current_gid) if g.id in self.user.generators else None,
                 display_callback=lambda g=generator_obj: "Buy x10" if ((g.id in self.user.generators and self.user.generators[g.id].amount > 0)) else "Locked",
-                border_radius=15
-            )
-            multipler = CreateFrect(
-                885, 
-                93,    
-                130,         
-                40,
-                bg_colour=LIGHT_BLUE,
-                font=self.row_font,
-                font_colour=WHITE,
-                display="x10 multiplier",
                 border_radius=15
             )
 
@@ -649,17 +658,22 @@ class GameMenu:
                 border_radius=15
             )
 
-            rows.append({
+            row_data = {
                 "name": name_frect,
                 "level": multiplier_display,
                 "price": price_frect,
                 "btn": buy_multiplier,
-                "multipler": multipler,
                 "menu_name": menu_name,
                 "money_display": money_display,
                 "income_display": income_display,
-                "exit_menu_btn": exit_menu_btn
-            })
+                "exit_menu_btn": exit_menu_btn,
+                "icon": icon_frect, 
+            }
+            # Add the multiplier only to the first row
+            if idx == 0:
+                row_data["multiplier"] = multiplier
+                
+            rows.append(row_data)
         return rows
     
     # other def ──────────────────────────────────────────────────────────

@@ -99,10 +99,9 @@ class NavButton(Button):
 
             
 class CreateFrect:
-    """ Handles creation of frects for static/dynamic displays of text, or ui elements around screens.
-    Accepts multiple attributes when defining 
-    
-    
+    """
+    Handles creation of frects for static/dynamic displays of text, or ui elements around screens. 
+    Images are centered within the frect, and text is centered within the frect.
     """
     def __init__(self, x, y, width, height, bg_colour=None, id=None, display=None, font=None, font_colour=None, image=None, display_callback=None, border_radius=0, click_effect = None):
         self.frect = pygame.FRect(x, y, width, height)
