@@ -19,7 +19,6 @@ pygame.mixer.init()
 try:
     if DEBUG_MODE:
         print("\n\n\n (づ｡◕‿‿◕｡)づ DEBUG MODE ACTIVE (づ｡◕‿‿◕｡)づ \n\n\n")
-        print("Loaded user data from save file.")
     user = SaveStates.load_user() # creates the current user object from saved data
 except Exception as e:
         print("\n\n (≧ヘ≦ ) Error loading save file, creating new user. (≧ヘ≦ ) \n\n") if DEBUG_MODE else None

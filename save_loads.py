@@ -34,7 +34,7 @@ class SaveStates:
     @staticmethod
     def save_all(user, music_player):
         path = SaveStates.get_path()
-        print(f"\n (づ｡◕‿‿◕｡)づ Saving game state to {path} \n") if DEBUG_MODE else None
+        print(f"\n (づ｡◕‿‿◕｡)づ Saving game data to {path} \n") if DEBUG_MODE else None
         save_data = {
             "user_data": user.to_dict(),
             "music_data": music_player.to_dict(),
@@ -66,7 +66,7 @@ class SaveStates:
     
     
     @staticmethod 
-    def time_elapsed() -> float:
+    def time_elapsed():
         path = SaveStates.get_path()
         if not os.path.exists(path):
             return 0.0

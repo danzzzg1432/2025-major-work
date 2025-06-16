@@ -1,1 +1,114 @@
-
+{
+    "user_data": {
+        "money": 8397279.0,
+        "generators": [
+            {
+                "id": "g1",
+                "level": 4,
+                "amount": 51,
+                "time_progress": 0.1150000000000034,
+                "is_generating": true,
+                "revenue_multiplier": 10,
+                "revenue_multiplier_purchases": 1
+            },
+            {
+                "id": "g2",
+                "level": 2,
+                "amount": 30,
+                "time_progress": -0.010000000000005116,
+                "is_generating": false,
+                "revenue_multiplier": 1,
+                "revenue_multiplier_purchases": 0
+            },
+            {
+                "id": "g3",
+                "level": 1,
+                "amount": 11,
+                "time_progress": -0.8390000000000022,
+                "is_generating": false,
+                "revenue_multiplier": 1,
+                "revenue_multiplier_purchases": 0
+            },
+            {
+                "id": "g4",
+                "level": 1,
+                "amount": 1,
+                "time_progress": -0.003999999999990678,
+                "is_generating": false,
+                "revenue_multiplier": 1,
+                "revenue_multiplier_purchases": 0
+            },
+            {
+                "id": "g5",
+                "level": 1,
+                "amount": 1,
+                "time_progress": 0.0,
+                "is_generating": false,
+                "revenue_multiplier": 1,
+                "revenue_multiplier_purchases": 0
+            },
+            {
+                "id": "g6",
+                "level": 1,
+                "amount": 1,
+                "time_progress": -0.0020000000000095497,
+                "is_generating": false,
+                "revenue_multiplier": 1,
+                "revenue_multiplier_purchases": 0
+            },
+            {
+                "id": "g7",
+                "level": 1,
+                "amount": 0,
+                "time_progress": 0.0,
+                "is_generating": false,
+                "revenue_multiplier": 1,
+                "revenue_multiplier_purchases": 0
+            },
+            {
+                "id": "g8",
+                "level": 1,
+                "amount": 0,
+                "time_progress": 0.0,
+                "is_generating": false,
+                "revenue_multiplier": 1,
+                "revenue_multiplier_purchases": 0
+            },
+            {
+                "id": "g9",
+                "level": 1,
+                "amount": 0,
+                "time_progress": 0.0,
+                "is_generating": false,
+                "revenue_multiplier": 1,
+                "revenue_multiplier_purchases": 0
+            },
+            {
+                "id": "g0",
+                "level": 1,
+                "amount": 0,
+                "time_progress": 0.0,
+                "is_generating": false,
+                "revenue_multiplier": 1,
+                "revenue_multiplier_purchases": 0
+            }
+        ],
+        "managers": [
+            {
+                "id": "g1"
+            }
+        ],
+        "tutorial_state": {
+            "first_generator": true,
+            "first_manual_generation": true,
+            "first_manager": true,
+            "first_upgrade": true,
+            "help_menu_opened": false
+        }
+    },
+    "music_data": {
+        "volume": 6.938893903907228e-17,
+        "is_paused": false
+    },
+    "save_time": "2025-06-16T00:22:12.372270+00:00"
+}

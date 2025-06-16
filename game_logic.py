@@ -40,8 +40,8 @@ class Generator:
         self.growth_rate = growth_rate # multiplier for price
         self.time_progress = time_progress  # Remaining time for the current cycle
         self.is_generating = is_generating  # True if currently in a generation cycle
-        self.revenue_multiplier = revenue_multiplier
-        self.revenue_multiplier_purchases = revenue_multiplier_purchases
+        self.revenue_multiplier = revenue_multiplier # multiplier for base_rate
+        self.revenue_multiplier_purchases = revenue_multiplier_purchases # number of times the revenue multiplier has been purchased
 
     def get_effective_time(self, all_user_generators):
         """Calculates the effective time for a generation cycle after milestone reductions."""

@@ -43,7 +43,7 @@ def simulate_offline_progress(user): # simulate offline progress for the user
     try: # Load user data from save file
         
         time_elapsed_offline = SaveStates.time_elapsed()
-        print(f"\nTime elapsed when loading user {time_elapsed_offline}") if DEBUG_MODE else None
+        print(f"\nTime elapsed when offline:  {time_elapsed_offline}s") if DEBUG_MODE else None
         lets_see = 0
         for gen_id, gen in user.generators.items():
             if gen.amount > 0 and (gen.is_generating or gen.id in user.managers): # if the generator is owned and is generating or has a manager
@@ -79,7 +79,7 @@ def simulate_offline_progress(user): # simulate offline progress for the user
                             gen.is_generating = False # reset the generating state
                             if gen.id in user.managers: # if the generator is managed   
                                 gen.start_generation_cycle(user.generators) # restart the cycle
-        print(f"\nOffline progress added: ${lets_see} (simulated) ") if DEBUG_MODE else None
+        print(f"\nOffline progress added: ${lets_see}") if DEBUG_MODE else None
 
     except Exception as e:
         print(f"\n\n (≧ヘ≦ ) Error simulating offline progress: {e} (≧ヘ≦ ) \n\n") if DEBUG_MODE else None

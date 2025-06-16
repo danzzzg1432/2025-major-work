@@ -192,7 +192,7 @@ class GameMenu:
     def create_hud_elems(self): # create hud elements
         return {
             "money_display": CreateFrect(
-                x=550,
+                x=537.5,
                 y=20,
                 width=self.MONEY_DISPLAY_WIDTH,
                 height=self.money_display_height,
@@ -202,7 +202,7 @@ class GameMenu:
                 display_callback=lambda: f"${format_large_number(round(self.user.money))}"
             ),
             "income_display": CreateFrect(
-                x=550,
+                x=547.5,
                 y=100,
                 width=self.INCOME_DISPLAY_WIDTH,
                 height=self.income_display_height,
@@ -213,11 +213,13 @@ class GameMenu:
             )
         }
 
-    def load_generator_icons(self):
+    def load_generator_icons(self, size=()):
         icons = {}
+        if size is ():
+            size = (70, 70) # default large icon size
         for g_id in GENERATOR_PROTOTYPES:
             image_path = f"{IMAGES_DIR}/{g_id}.png"
-            icons[g_id] = load_image(image_path, (70, 70)) # scale the image to 70x70
+            icons[g_id] = load_image(image_path, size) # scale the image to 70x70
         return icons
 
     def create_rows(self): # create the column rows for the generators
@@ -255,7 +257,7 @@ class GameMenu:
                                image=self.generator_icons.get(g_id),
                                border_radius=5) 
 
-            owned = CreateFrect(col_x+15, row_y+ICON_SIZE-10, 55, 24,
+            owned = CreateFrect(col_x+12.5, row_y+ICON_SIZE-10, 55, 24,
                                 BEIGE,
                                 font=self.row_font, 
                                 font_colour=BLACK,
@@ -483,7 +485,7 @@ class GameMenu:
             icon_frect = CreateFrect(
                 220, y, 40, 40, bg_colour=BEIGE,
                 font=self.row_font, font_colour=BLACK,
-                display=f"{mproto['name'][0]}", border_radius=5
+                display=f"{mproto["name"][0]}", border_radius=5
             )
 
             name_frect = CreateFrect(
@@ -522,7 +524,7 @@ class GameMenu:
                 display="Managers"
             )
             money_display = CreateFrect(
-                    550,
+                    537.5,
                     20,
                     self.MONEY_DISPLAY_WIDTH,
                     self.money_display_height,
@@ -532,7 +534,7 @@ class GameMenu:
                     display_callback=lambda: f"${format_large_number(round(self.user.money))}"
                 )
             income_display = CreateFrect(
-                550,
+                547.5,
                 100,
                 self.INCOME_DISPLAY_WIDTH,
                 self.income_display_height,
@@ -563,6 +565,12 @@ class GameMenu:
             y = y0 + idx * row_h
             self.user.ensure_generator(gid)
             generator_obj = self.user.generators[gid]
+            
+            icon_frect = CreateFrect(
+                x_start, y, 40, 40, bg_colour=None,
+                image=self.generator_icons[gid],
+                border_radius=5
+            )
 
             name_frect = CreateFrect(
                 x_start, y, 260, 40, bg_colour=BEIGE,
@@ -570,7 +578,7 @@ class GameMenu:
                 display=f"{proto['name']}", border_radius=15
             )
 
-            level_frect = CreateFrect(
+            multiplier_display = CreateFrect(
                 x_start + 280, y, 120, 40, bg_colour=BEIGE,
                 font=self.row_font, font_colour=BLACK,
                 display_callback=lambda g=generator_obj: f"x{format_large_number(g.level * g.revenue_multiplier)}",
@@ -578,23 +586,23 @@ class GameMenu:
             )
 
             price_frect = CreateFrect(
-                x_start + 450, y, 200, 40, bg_colour=BEIGE,
+                x_start + 430, y, 200, 40, bg_colour=BEIGE,
                 font=self.row_font, font_colour=BLACK,
                 display_callback=lambda g=generator_obj: f"${format_large_number(g.get_next_revenue_multiplier_price())}",
                 border_radius=15
             )
 
 
-            buy_btn = Button(
-                x_start + 670, y, 120, 40, "Buy x10", GRAY, self.row_font, BLACK,
+            buy_multiplier = Button(
+                x_start + 650, y, 120, 40, "Buy x10", GRAY, self.row_font, BLACK,
                 callback=lambda current_gid=gid, g=generator_obj: self.user.buy_generator_revenue_multiplier(current_gid) if g.id in self.user.generators else None,
                 display_callback=lambda g=generator_obj: "Buy x10" if ((g.id in self.user.generators and self.user.generators[g.id].amount > 0)) else "Locked",
                 border_radius=15
             )
             multipler = CreateFrect(
-                910, 
+                885, 
                 93,    
-                120,         
+                130,         
                 40,
                 bg_colour=LIGHT_BLUE,
                 font=self.row_font,
@@ -615,7 +623,7 @@ class GameMenu:
             )
 
             money_display = CreateFrect(
-                550,
+                537.5,
                 20,
                 self.MONEY_DISPLAY_WIDTH,
                 self.money_display_height,
@@ -626,7 +634,7 @@ class GameMenu:
             )
 
             income_display = CreateFrect(
-                x=550,
+                x=547.5,
                 y=100,
                 width=self.INCOME_DISPLAY_WIDTH,
                 height=self.income_display_height,
@@ -643,9 +651,9 @@ class GameMenu:
 
             rows.append({
                 "name": name_frect,
-                "level": level_frect,
+                "level": multiplier_display,
                 "price": price_frect,
-                "btn": buy_btn,
+                "btn": buy_multiplier,
                 "multipler": multipler,
                 "menu_name": menu_name,
                 "money_display": money_display,

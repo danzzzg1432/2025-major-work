@@ -16,7 +16,7 @@ pygame.init()
 pygame.font.init()
 
 
-DEBUG_MODE = False
+DEBUG_MODE = True
 
 # Screen settings
 SCREEN_WIDTH = 1200
