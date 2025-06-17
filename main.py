@@ -27,9 +27,10 @@ except Exception as e:
             print(f" (≧ヘ≦ ) Error loading save file: {e} (≧ヘ≦ ) ")
         user = User(STARTING_MONEY) 
 simulate_offline_progress(user)
-
 try:
+    print("\n\n (づ｡◕‿‿◕｡)づ Loading music... (づ｡◕‿‿◕｡)づ") if DEBUG_MODE else None
     music_player = SaveStates.load_music() # creates the current music object from saved data
+    
 except Exception as e:
     print("\n\n (≧ヘ≦ ) Error loading music, creating new music player. (≧ヘ≦ ) \n\n") if DEBUG_MODE else None
     print(Exception, e) if DEBUG_MODE else None

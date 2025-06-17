@@ -1,13 +1,13 @@
 {
     "user_data": {
-        "money": 583642.0,
+        "money": 2.0,
         "generators": [
             {
                 "id": "g1",
-                "level": 8,
-                "amount": 188,
-                "time_progress": 0.075,
-                "is_generating": true,
+                "level": 1,
+                "amount": 1,
+                "time_progress": 0.0,
+                "is_generating": false,
                 "revenue_multiplier": 1,
                 "revenue_multiplier_purchases": 0
             },
@@ -93,15 +93,11 @@
                 "revenue_multiplier_purchases": 0
             }
         ],
-        "managers": [
-            {
-                "id": "g1"
-            }
-        ],
+        "managers": [],
         "tutorial_state": {
             "first_generator": true,
-            "first_manual_generation": true,
-            "first_manager": true,
+            "first_manual_generation": false,
+            "first_manager": false,
             "first_upgrade": false,
             "help_menu_opened": true
         }
@@ -110,5 +106,5 @@
         "volume": 0.5,
         "is_paused": true
     },
-    "save_time": "2025-06-17T07:17:23.247863+00:00"
+    "save_time": "2025-06-17T12:42:45.140687+00:00"
 }

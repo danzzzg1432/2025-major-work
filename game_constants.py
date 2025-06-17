@@ -164,7 +164,7 @@ MANAGER_PROTOTYPES = {
     "g4": { "name": "Non suspicious kookaburra", "cost": 500000 },
     "g5": { "name": "Wu's Dad", "cost": 1200000 },
     "g6": { "name" :"Hw Copier (not)", "cost": 10000000 },
-    "g7": { "name" :"Dames Ju", "cost": 111111111 },
+    "g7": { "name": "Dames Ju", "cost": 111111111 },
     "g8": { "name" :"buStationary", "cost": 555555555 },
     "g9": { "name" :"Useless", "cost": 10000000000 },
     "g0": { "name" :"You", "cost": 100000000000 },

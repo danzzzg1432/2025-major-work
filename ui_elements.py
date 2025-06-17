@@ -84,7 +84,6 @@ class Button: # global button class
         """Handles button animations, e.g. hover effects, click effects, etc."""
         self.colour = BUTTON_HOVER_COLOUR if self.is_hovered(pos) else self.initial_colour  # Change colour on hover
         self.text_colour = GRAY if self.is_hovered(pos) else WHITE
-        # TODO: possibly add more animations like click effects, etc?
 
 class NavButton(Button):
     """Child class of Buttons for the navigation buttons in the game menu."""

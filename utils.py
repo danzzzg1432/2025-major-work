@@ -220,11 +220,6 @@ def tutorial_progress(user, screen, game_menu):
     and text to point them towards the next key action, such as buying their
     first generator, generating manually, hiring a manager, or purchasing an upgrade.
     
-    TODO:
-    (point to the help menu)
-    - explanation for timer
-    - explain the upgrades/unlocks system (i.e. when will the times halve)
-    
     """
     def draw_tutorial_hint(screen, target_rect, text, arrow_pos='left'):
         """
