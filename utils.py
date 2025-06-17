@@ -237,11 +237,11 @@ def tutorial_progress(user, screen, game_menu):
         text_rect_temp = text_surf_temp.get_rect() # get the rectangle of the text
 
         hint_frect = CreateFrect(
-            x=0, y=0, width=text_rect_temp.width + 20,
-            height=text_rect_temp.height + 20, 
+            x=0, y=0, width=text_rect_temp.width + 40,
+            height=text_rect_temp.height + 40, 
             bg_colour=BLACK,
             font=text_font,
-            font_colour=RED,
+            font_colour=WHITE,
             display=text
             )
         hint_frect.shadow_colour = None # no shadow for tutorial hints
@@ -283,15 +283,15 @@ def tutorial_progress(user, screen, game_menu):
                 first_gen_row = game_menu.rows[0]
                 buy_button_rect = first_gen_row['buy'].rect
                 # The first generator is on the left side, so point from the right.
-                draw_tutorial_hint(screen, buy_button_rect, "Buy your first student!", 'right')
+                draw_tutorial_hint(screen, buy_button_rect, "Buy, and keep buying your first generator!", 'right')
         return
 
-    # Stage 1.5: After buying the first generator, teach manual generation.
+    # Stage 1.5: After buying the first generator, teach manual generation and tell them to keep buying generators and keep clicking
     if user.tutorial_state.get('first_generator') and not user.tutorial_state.get('first_manual_generation'):
         if game_menu.active_panel is None: # 
             first_gen_row = game_menu.rows[0]
             icon_rect = first_gen_row['icon'].frect
-            draw_tutorial_hint(screen, icon_rect, "Click on me to generate!", 'right')
+            draw_tutorial_hint(screen, icon_rect, "Keep on clicking on me to generate!", 'right')
         return
 
     # Stage 2: Once manual generation is understood, introduce managers for automation.
@@ -302,13 +302,21 @@ def tutorial_progress(user, screen, game_menu):
             if game_menu.active_panel != 'shop':
                 # If not in the shop, point to the 'Managers' navigation button.
                 manager_button = game_menu.nav_buttons[0] # 'Managers' button
-                draw_tutorial_hint(screen, manager_button.rect, "Automate with a manager!", 'right')
+                draw_tutorial_hint(screen, manager_button.rect, "Automatically generate with a manager!", 'right')
             else:
                 # If in the shop, point to the buy button for the first manager.
                 first_manager_row = game_menu.shop_rows[0]
                 buy_button_rect = first_manager_row['btn'].rect
-                draw_tutorial_hint(screen, buy_button_rect, "Buy the first manager!", 'right')
+                draw_tutorial_hint(screen, buy_button_rect, "Buy me! I will click for you!", 'left')
         return
+    
+    # Stage 2.5: Introduce the help menu
+    if not user.tutorial_state.get('help_menu_opened'):
+        if user.tutorial_state.get('first_manager'):
+            if game_menu.active_panel is None: 
+                help_menu_btn_rect = game_menu.nav_buttons[3]
+                draw_tutorial_hint(screen, help_menu_btn_rect.rect, "Click here if you need help!", "right")
+        return   
 
     # Stage 3: After the first manager, introduce upgrades to boost income.
     if not user.tutorial_state.get('first_upgrade'):
@@ -324,5 +332,5 @@ def tutorial_progress(user, screen, game_menu):
                     first_upgrade_row = game_menu.upgrades_rows[0]
                     buy_button_rect = first_upgrade_row['btn'].rect
                     draw_tutorial_hint(screen, buy_button_rect, "Boost your income!", 'left')
-                    
-                    
+    
+

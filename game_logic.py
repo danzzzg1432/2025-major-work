@@ -51,6 +51,7 @@ class Generator:
         for milestone in GENERATOR_TIME_MILESTONES:
             if self.amount >= milestone:
                 effective_time /= 2
+         
         
         # Apply global milestones
         for milestone in GLOBAL_TIME_MILESTONES:

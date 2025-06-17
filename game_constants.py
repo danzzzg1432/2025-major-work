@@ -191,15 +191,15 @@ MIN_GENERATION_TIME = 0.01 # Minimum time a cycle can take after all reductions
 
 # Revenue multiplier upgrades (from the upgrades panel)
 REVENUE_MULTIPLIER_BASE_PRICES = {
-    "g1": 1000000,
-    "g2": 2500000,
-    "g3": 5000000,
-    "g4": 10000000,
-    "g5": 25000000,
-    "g6": 50000000,
-    "g7": 100000000,
-    "g8": 250000000,
-    "g9": 500000000,
-    "g0": 1000000000,
+    "g1": 100000000,
+    "g2": 250000000,
+    "g3": 500000000,
+    "g4": 1000000000,
+    "g5": 2500000000,
+    "g6": 5000000000,
+    "g7": 10000000000,
+    "g8": 25000000000,
+    "g9": 50000000000,
+    "g0": 100000000000,
 }
 REVENUE_MULTIPLIER_GROWTH_FACTOR = 2500

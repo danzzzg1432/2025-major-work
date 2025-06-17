@@ -309,11 +309,11 @@ class GameMenu:
         spacing = 80
         items = [
         # have lambdas as they arent entirely new states
-        ("Managers",  lambda: self.open_panel("shop")),
-        ("Upgrades",   lambda: self.open_panel("upgrades")),
-        ("Settings",  lambda: self.open_settings_panel()), 
-        ("Help",      lambda: self.open_help_panel()),
-        ("Exit",      lambda: self.save_and_exit()),
+        ("Managers",  lambda: self.open_panel("shop")), # 0
+        ("Upgrades",   lambda: self.open_panel("upgrades")), # 1
+        ("Settings",  lambda: self.open_settings_panel()),  # 2
+        ("Help",      lambda: self.open_help_panel()), # 3
+        ("Exit",      lambda: self.save_and_exit()), # 4
         ]
         for idx, (label, callback) in enumerate(items):
             btns.append(NavButton(start_y + idx*spacing, label, callback))
@@ -690,6 +690,7 @@ class GameMenu:
     
     def open_help_panel(self):
         self.state_manager.set_state(HELP_MENU, pass_back=GAME_MENU)
+        self.user.tutorial_state["help_menu_opened"] = True
         return True # event handled
 
 
@@ -990,7 +991,7 @@ class HelpDetailMenu: # menu for help topics, methods are all self-explanatory
         words = text.split(' ')
         lines = []
         current_line = ''
-        for word in words: # loop through each word and add it to the current line
+        for word in words: # add the word to the current line
             test_line = current_line + word + ' ' # add the word to the current line
             if font.size(test_line)[0] < max_width: # if the line is less than the max width, add the word to the current line
                 current_line = test_line
@@ -1024,7 +1025,7 @@ class HelpDetailMenu: # menu for help topics, methods are all self-explanatory
                 {'type': 'body', 'text': 'Your empire doesn\'t sleep just because you do! If you have managers for your generators, they will continue to work for you even when the game is closed. The next time you log in, you will receive all the money they have earned for you while you were away.'},
             ]
         }
-        return content.get(self.topic, []) if self.topic else [] # return the help content for the topic, or an empty list if no topic is provided
+        return content.get(self.topic, []) # return the help content for the topic, or an empty list if no topic is provided
 
     def create_display_elements(self):
         display_elements = []
@@ -1202,4 +1203,3 @@ class Testing: # ignore
         self.screen.blit(williamdu, (600, 600))
         
         pygame.display.flip()
-       
