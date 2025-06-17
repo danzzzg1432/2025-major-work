@@ -1,13 +1,13 @@
 {
     "user_data": {
-        "money": 13.0,
+        "money": 583642.0,
         "generators": [
             {
                 "id": "g1",
-                "level": 1,
-                "amount": 1,
-                "time_progress": -0.012000000000001898,
-                "is_generating": false,
+                "level": 8,
+                "amount": 188,
+                "time_progress": 0.075,
+                "is_generating": true,
                 "revenue_multiplier": 1,
                 "revenue_multiplier_purchases": 0
             },
@@ -93,18 +93,22 @@
                 "revenue_multiplier_purchases": 0
             }
         ],
-        "managers": [],
+        "managers": [
+            {
+                "id": "g1"
+            }
+        ],
         "tutorial_state": {
             "first_generator": true,
             "first_manual_generation": true,
-            "first_manager": false,
+            "first_manager": true,
             "first_upgrade": false,
-            "help_menu_opened": false
+            "help_menu_opened": true
         }
     },
     "music_data": {
         "volume": 0.5,
-        "is_paused": false
+        "is_paused": true
     },
-    "save_time": "2025-06-17T01:08:35.274512+00:00"
+    "save_time": "2025-06-17T07:17:23.247863+00:00"
 }

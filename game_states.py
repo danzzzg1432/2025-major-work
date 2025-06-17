@@ -186,8 +186,10 @@ class GameMenu:
         self.nav_buttons = self.create_nav_column() # navigation column
         self.rows = self.create_rows() # generator row creating
         self.shop_rows = self.build_shop_menu()
+        self.shop_row_description = self.build_shop_description()
         self.upgrades_rows = self.build_upgrades_panel()
         self.hud_elems = self.create_hud_elems()
+        
 
     def create_hud_elems(self): # create hud elements
         return {
@@ -451,7 +453,8 @@ class GameMenu:
                 r["income_display"].draw(self.screen)
                 r["menu_name"].draw(self.screen)
                 r["exit_menu_btn"].draw(self.screen)
-            
+            for r in self.shop_row_description.values():
+                r.draw(self.screen)
         # draw the upgrades panel
         elif self.active_panel == "upgrades":
             panel_bg = pygame.Surface((1030, SCREEN_HEIGHT), pygame.SRCALPHA)
@@ -471,6 +474,7 @@ class GameMenu:
                     r["multiplier"].draw(self.screen)
                 r["exit_menu_btn"].draw(self.screen)
         # draw the tutorial hints on top of everything else.
+        
         tutorial_progress(self.user, self.screen, self)
         
         # flip the display
@@ -480,7 +484,6 @@ class GameMenu:
     def build_shop_menu(self):
         rows = []
         y0, row_h = 135, 65  
-        
         # create the rows for the shop menu
         for idx, (gid, mproto) in enumerate(MANAGER_PROTOTYPES.items()):
             y = y0 + idx*row_h
@@ -515,7 +518,7 @@ class GameMenu:
                 ), border_radius=15
             )
             exit_menu_btn = Button(
-                1100, 20, 60, 40, "Exit", GRAY, self.row_font, BLACK,
+                1135, 20, 60, 40, "Exit", GRAY, self.row_font, BLACK,
                 callback=lambda: self.open_panel(None),
                 border_radius=15
             )
@@ -560,7 +563,25 @@ class GameMenu:
                 "exit_menu_btn": exit_menu_btn
             }
             rows.append(row_data)
-        return rows
+    
+        return rows  # return the list of rows for the shop menu
+    
+    def build_shop_description(self):
+        description_row = {
+            "r1": CreateFrect(928, 135, 270, 24, bg_colour=None,
+                                    display="Managers automatically generate",
+                                    font=self.row_font, font_colour=GRAY),
+            "r2": CreateFrect(930, 160, 270, 24, bg_colour=None,
+                                    display="money for you without clicking!",
+                                    font=self.row_font, font_colour=GRAY),
+            "r3": CreateFrect(930, 185, 270, 24, bg_colour=None,
+                                    display="They also allow you to earn",
+                                    font=self.row_font, font_colour=GRAY),
+            "r4": CreateFrect(930, 210, 270, 24, bg_colour=None,
+                                    display="money when offline.",
+                                    font=self.row_font, font_colour=GRAY)
+        }
+        return description_row  # return the description row for the shop menu
     
     def build_upgrades_panel(self):
         rows = []

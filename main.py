@@ -59,7 +59,8 @@ while True:
         current_state.update()
         current_state.render()
     except Exception as e:
-        print(f"\n\n(≧ヘ≦ ) No current screen found, exiting game. (≧ヘ≦ ) ")
+        print(e) if DEBUG_MODE else None
+        print(f"\n\n(≧ヘ≦ ) No current screen found, exiting game. (≧ヘ≦ ) ") if DEBUG_MODE else None
         SaveStates.save_all(user, music_player)
         pygame.quit()
         sys.exit()

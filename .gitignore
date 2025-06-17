@@ -46,3 +46,6 @@ __pycache__/game_states.cpython-313.pyc
 savestates/save_data.json
 __pycache__/game_logic.cpython-313.pyc
 assets/.DS_Store
+savestates/save_data.json
+__pycache__/game_states.cpython-313.pyc
+__pycache__/game_constants.cpython-313.pyc
