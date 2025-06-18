@@ -22,7 +22,6 @@ class StateManager: # global state manager
             SETTINGS_MENU: SettingsMenu(screen, user, self, music_player, pass_back=None), # pass current_active_state_name
             HELP_MENU: HelpMenu(screen, user, self, pass_back=None),
             HELP_DETAIL_MENU: HelpDetailMenu(screen, user, self, pass_back=None, topic=None),
-            TESTING: Testing(screen, user, self) if DEBUG_MODE else None
             } 
         self.user = user
         self.music_player = music_player
@@ -95,7 +94,6 @@ class MainMenu:  # —— Main menu screen
 
     # callbacks ─────────────────────────────────────────────────────────
     def start_game(self):
-        # self.state_manager.set_state(TESTING) if DEBUG_MODE else self.state_manager.set_state(GAME_MENU)
         self.state_manager.set_state(GAME_MENU)
 
     def open_settings(self):
@@ -1140,87 +1138,3 @@ class HelpDetailMenu: # menu for help topics, methods are all self-explanatory
             
         pygame.display.flip()
 
-# ────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
-class Testing: # ignore
-    def __init__(self, screen, user, state_manager):
-        self.screen = screen
-        self.state_manager = state_manager
-        self.font = DEFAULT_FONT
-        self.user = user
-        self.buttons = self.create_buttons()
-        self.screen_elements = {
-            "money_display": CreateFrect(300, 60, 60, 60, "PINK", id="money_display", font=self.font, font_colour="Black", display_callback=lambda: f"ATAR POINTS: {format_large_number(round(self.user.money))}")
-        }
-        self.last_time = pygame.time.get_ticks() / 1000
-
-    def create_buttons(self):
-        buttons = []
-        padding_x = 150
-        padding_y = 200
-        col_width = 450
-        for idx, (generator_id, prototype) in enumerate(GENERATOR_PROTOTYPES.items()):
-            x = padding_x + (idx * col_width)
-            self.user.ensure_generator(generator_id) # Ensure gen exists for price display
-            generator_obj = self.user.generators[generator_id]
-            
-            buttons.append(Button(
-                x, padding_y + 0*200, BUTTON_WIDTH, BUTTON_HEIGHT,
-                f"Buy {prototype['name']}", # Simplified text
-                GRAY, self.font, BLACK,
-                callback=lambda gid=generator_id: self.user.buy_generator(gid),
-                display_callback=lambda g=generator_obj:
-                    f"Buy {g.name} for {format_large_number(g.next_price)}"
-            ))
-            buttons.append(Button(
-                x, padding_y + 1*60, 100, BUTTON_HEIGHT,
-                f"Gen {prototype['name']}", 
-                YELLOW, self.font, BLACK, 
-                callback=lambda gid=generator_id: self.user.manual_generate(gid)
-            ))
-            mproto = MANAGER_PROTOTYPES[generator_id]
-            buttons.append(Button( 
-                x, padding_y + 2*60, 100, BUTTON_HEIGHT, 
-                f"Hire {mproto['name']}", YELLOW, self.font, BLACK, 
-                callback=lambda gid=generator_id: self.user.buy_manager(gid),
-                display_callback=lambda current_gid=generator_id, mp=mproto, um=self.user.managers, ug=self.user.generators: (
-                    f"Buy {mp['name']} for {format_large_number(mp['cost'])}" 
-                    if current_gid in ug and ug[current_gid].amount > 0 and current_gid not in um 
-                    else ("Owned" if current_gid in um else f"Need {ug[current_gid].name}")
-                )
-            ))
-        return buttons
-       
-    def handle_events(self, events):
-        for event in events:
-            if event.type == pygame.QUIT:
-                SaveStates.save_all(self.user, self.state_manager.music_player)
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_pos = pygame.mouse.get_pos()
-                for button in self.buttons:
-                    if button.is_hovered(mouse_pos):
-                        button.click()
-        return True
-       
-    def update(self):
-        now = pygame.time.get_ticks() / 1000
-        dt  = now - self.last_time
-        self.user.update(dt) # User update handles generator updates
-        self.last_time = now
-
-        mouse_pos = pygame.mouse.get_pos()
-        for btn in self.buttons:
-            btn.animations(mouse_pos) # Pass mouse_pos to animations
-       
-    def render(self):
-        self.screen.fill(WHITE)
-        self.screen.blit(main_menu_background, (-300, 0))
-        
-        for button in self.buttons:
-            button.draw(self.screen)
-        for element in self.screen_elements.values():
-            element.draw(self.screen)
-        self.screen.blit(williamdu, (600, 600))
-        
-        pygame.display.flip()
