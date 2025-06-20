@@ -503,14 +503,14 @@ class GameMenu:
             cost_frect = CreateFrect(
                 570, y, 180, 50, bg_colour=BEIGE,
                 font=self.row_font, font_colour=BLACK,
-                display_callback=lambda mp=mproto: format_large_number(mp["cost"]), border_radius=15
+                display_callback=lambda mp=mproto: f"${format_large_number(mp["cost"])}", border_radius=15
             )
             buy_btn = Button(
                 770, y, 155, 50, "Buy", GRAY, self.row_font, WHITE,
                 callback=lambda current_gid=gid: self.user.buy_manager(current_gid),
                 display_callback=lambda current_gid=gid, mp=mproto, um=self.user.managers: (
                     "Owned" if current_gid in um else (
-                        f"Buy {format_large_number(mp['cost'])}" if (current_gid in self.user.generators and self.user.generators[current_gid].amount > 0) 
+                        f"Buy" if (current_gid in self.user.generators and self.user.generators[current_gid].amount > 0) 
                         else "Locked"
                     )
                 ), border_radius=15
