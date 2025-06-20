@@ -10,7 +10,7 @@ If you decide to download and run the game, please consider providing [feedback]
 - **Pip** – Python package manager used to install dependencies.
 
 Download Python here:
-- [`Python`](https://www.python.org/downloads/) – handling graphics, input and sound.
+- [`Python`](https://www.python.org/downloads/)
 
 Install pip by running these commands inside your command line or terminal:
 
