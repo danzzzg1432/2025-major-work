@@ -21,7 +21,7 @@ class StateManager: # global state manager
             GAME_MENU: GameMenu(screen, user, self),
             SETTINGS_MENU: SettingsMenu(screen, user, self, music_player, pass_back=None), # pass current_active_state_name
             HELP_MENU: HelpMenu(screen, user, self, pass_back=None),
-            HELP_DETAIL_MENU: HelpDetailMenu(screen, user, self, pass_back=None, topic=None),
+            HELP_DETAIL_MENU: HelpDetailMenu(screen, user, self, topic=None),
             } 
         self.user = user
         self.music_player = music_player
@@ -911,7 +911,7 @@ class HelpMenu: # menu for help topics, methods are all self-explanatory
         self.pass_back = pass_back
         self.buttons = []
         self.display_elements = {}
-        self.setup_ui()
+        self.setup_ui() # setup the UI elements and buttons. encapsulated for Statemanager passback purposes
 
     def setup_ui(self):
         self.display_elements = self.create_display_elements()
@@ -951,7 +951,7 @@ class HelpMenu: # menu for help topics, methods are all self-explanatory
         return buttons
 
     def open_help_topic(self, topic):
-        self.state_manager.set_state(HELP_DETAIL_MENU, pass_back=HELP_MENU, topic=topic, original_state=self.pass_back)
+        self.state_manager.set_state(HELP_DETAIL_MENU, topic=topic, original_state=self.pass_back)
 
     def go_back(self):
         if self.pass_back:
@@ -990,11 +990,10 @@ class HelpMenu: # menu for help topics, methods are all self-explanatory
 
 
 class HelpDetailMenu: # menu for help topics, methods are all self-explanatory
-    def __init__(self, screen, user, state_manager, pass_back=None, topic=None, original_state=None):
+    def __init__(self, screen, user, state_manager, topic=None, original_state=None):
         self.screen = screen
         self.user = user
         self.state_manager = state_manager
-        self.pass_back = pass_back
         self.topic = topic
         self.original_state = original_state
         
