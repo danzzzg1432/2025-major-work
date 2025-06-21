@@ -8,6 +8,8 @@ If you decide to download and run the game, please consider providing [feedback]
 
 - **Python 3.8+** – the game has been tested with Python 3.11, 3.12 and 3.13.
 - **Pip** – Python package manager used to install dependencies.
+- **Git** - Version control system for downloading the project
+
 
 Download Python here:
 - [`Python`](https://www.python.org/downloads/)
@@ -22,6 +24,10 @@ macOS:
 ```bash
 python -m ensurepip --upgrade
 ```
+
+Download git here:
+- [`git`](https://git-scm.com/downloads/win)
+  
 ## Installing Dependencies
 
 
@@ -33,7 +39,7 @@ pip uninstall pygame
 
 The game relies on a few third‑party libraries:
 
-- [`pygame-ce`](https://pypi.org/project/pygame-ce/) – handling graphics, input and sound.
+- [`pygame-community edition`](https://pypi.org/project/pygame-ce/) – handling graphics, input and sound.
 - [`ntplib`](https://pypi.org/project/ntplib/) – synchronising timestamps for save files.
 
 Install them using pip:
