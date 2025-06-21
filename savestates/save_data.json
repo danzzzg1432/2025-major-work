@@ -1,0 +1,141 @@
+{
+    "user_data": {
+        "money": 4.899317752374345e+58,
+        "generators": [
+            {
+                "id": "g1",
+                "level": 7378697629483820646400,
+                "amount": 2053,
+                "time_progress": 0.01,
+                "is_generating": true,
+                "revenue_multiplier": 10000000000000,
+                "revenue_multiplier_purchases": 13
+            },
+            {
+                "id": "g2",
+                "level": 7378697629483820646400,
+                "amount": 4000,
+                "time_progress": 0.01,
+                "is_generating": true,
+                "revenue_multiplier": 10000000000000,
+                "revenue_multiplier_purchases": 13
+            },
+            {
+                "id": "g3",
+                "level": 7378697629483820646400,
+                "amount": 4000,
+                "time_progress": 0.01,
+                "is_generating": true,
+                "revenue_multiplier": 10000000000000,
+                "revenue_multiplier_purchases": 13
+            },
+            {
+                "id": "g4",
+                "level": 7378697629483820646400,
+                "amount": 4000,
+                "time_progress": 0.01,
+                "is_generating": true,
+                "revenue_multiplier": 10000000000000,
+                "revenue_multiplier_purchases": 13
+            },
+            {
+                "id": "g5",
+                "level": 7378697629483820646400,
+                "amount": 4000,
+                "time_progress": 0.01,
+                "is_generating": true,
+                "revenue_multiplier": 10000000000000,
+                "revenue_multiplier_purchases": 13
+            },
+            {
+                "id": "g6",
+                "level": 7378697629483820646400,
+                "amount": 4000,
+                "time_progress": 0.01,
+                "is_generating": true,
+                "revenue_multiplier": 1000000000000,
+                "revenue_multiplier_purchases": 12
+            },
+            {
+                "id": "g7",
+                "level": 7378697629483820646400,
+                "amount": 4000,
+                "time_progress": 0.01,
+                "is_generating": true,
+                "revenue_multiplier": 1000000000000,
+                "revenue_multiplier_purchases": 12
+            },
+            {
+                "id": "g8",
+                "level": 7378697629483820646400,
+                "amount": 4000,
+                "time_progress": 0.01,
+                "is_generating": true,
+                "revenue_multiplier": 1000000000000,
+                "revenue_multiplier_purchases": 12
+            },
+            {
+                "id": "g9",
+                "level": 7378697629483820646400,
+                "amount": 4000,
+                "time_progress": 0.01,
+                "is_generating": true,
+                "revenue_multiplier": 1000000000000,
+                "revenue_multiplier_purchases": 12
+            },
+            {
+                "id": "g0",
+                "level": 7378697629483820646400,
+                "amount": 4026,
+                "time_progress": 0.0005781249999969873,
+                "is_generating": true,
+                "revenue_multiplier": 10000000000000000,
+                "revenue_multiplier_purchases": 14
+            }
+        ],
+        "managers": [
+            {
+                "id": "g1"
+            },
+            {
+                "id": "g0"
+            },
+            {
+                "id": "g9"
+            },
+            {
+                "id": "g8"
+            },
+            {
+                "id": "g7"
+            },
+            {
+                "id": "g6"
+            },
+            {
+                "id": "g5"
+            },
+            {
+                "id": "g4"
+            },
+            {
+                "id": "g3"
+            },
+            {
+                "id": "g2"
+            }
+        ],
+        "tutorial_state": {
+            "first_generator": true,
+            "first_manual_generation": true,
+            "first_manager": true,
+            "first_upgrade": true,
+            "help_menu_opened": true
+        }
+    },
+    "music_data": {
+        "volume": 0.05000000000000007,
+        "is_paused": true
+    },
+    "save_time": "2025-06-21T10:00:16.770552+00:00"
+}

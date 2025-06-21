@@ -26,7 +26,7 @@ class StateManager: # global state manager
         self.user = user
         self.music_player = music_player
 
-    def set_state(self, new_state_name, pass_back=None, topic=None): # set the state of the game
+    def set_state(self, new_state_name, pass_back=None, topic=None, original_state=None): # set the state of the game
         self.state = new_state_name # Update current active state name
         pygame.display.set_caption(f"{GAME_TITLE} - {new_state_name.replace('_', ' ').title()}") # set the window title to the current state
 
@@ -38,6 +38,8 @@ class StateManager: # global state manager
             if hasattr(target_state_object, 'topic') and topic is not None:
                 target_state_object.topic = topic
                 target_state_object.setup_ui()
+            if hasattr(target_state_object, 'original_state') and original_state is not None:
+                target_state_object.original_state = original_state
 
 
     @property
@@ -949,7 +951,7 @@ class HelpMenu: # menu for help topics, methods are all self-explanatory
         return buttons
 
     def open_help_topic(self, topic):
-        self.state_manager.set_state(HELP_DETAIL_MENU, pass_back=HELP_MENU, topic=topic)
+        self.state_manager.set_state(HELP_DETAIL_MENU, pass_back=HELP_MENU, topic=topic, original_state=self.pass_back)
 
     def go_back(self):
         if self.pass_back:
@@ -983,15 +985,18 @@ class HelpMenu: # menu for help topics, methods are all self-explanatory
         for btn in self.buttons:
             btn.draw(self.screen)
         pygame.display.flip()
+    
+    
 
 
 class HelpDetailMenu: # menu for help topics, methods are all self-explanatory
-    def __init__(self, screen, user, state_manager, pass_back=None, topic=None):
+    def __init__(self, screen, user, state_manager, pass_back=None, topic=None, original_state=None):
         self.screen = screen
         self.user = user
         self.state_manager = state_manager
         self.pass_back = pass_back
         self.topic = topic
+        self.original_state = original_state
         
         self.title_font = pygame.font.Font(LOGO_FONT, 36)
         self.header_font = pygame.font.Font(LOGO_FONT, 28)
@@ -1100,10 +1105,8 @@ class HelpDetailMenu: # menu for help topics, methods are all self-explanatory
         return buttons
 
     def go_back(self):
-        if self.pass_back:
-            self.state_manager.set_state(self.pass_back)
-        else:
-            self.state_manager.set_state(MAIN_MENU)
+            self.state_manager.set_state(HELP_MENU, pass_back=self.original_state)
+
 
     def handle_events(self, events):
         for event in events:
