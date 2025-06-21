@@ -1048,7 +1048,7 @@ class HelpDetailMenu: # menu for help topics, methods are all self-explanatory
                 {'type': 'body', 'text': 'Your empire doesn\'t sleep just because you do! If you have managers for your generators, they will continue to work for you even when the game is closed. The next time you log in, you will receive all the money they have earned for you while you were away.'},
             ]
         }
-        return content.get(self.topic, []) # return the help content for the topic, or an empty list if no topic is provided
+        return content.get(self.topic, []) # type: ignore # return the help content for the topic, or an empty list if no topic is provided
 
     def create_display_elements(self):
         display_elements = []

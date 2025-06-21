@@ -56,9 +56,9 @@ while True:
         last_time = now
         user.update(dt)  
         
-        current_state.handle_events(events)
-        current_state.update()
-        current_state.render()
+        current_state.handle_events(events) # type: ignore
+        current_state.update() # type: ignore
+        current_state.render() # type: ignore
     except Exception as e:
         print(e) if DEBUG_MODE else None
         print(f"\n\n(≧ヘ≦ ) No current screen found, exiting game. (≧ヘ≦ ) ") if DEBUG_MODE else None
