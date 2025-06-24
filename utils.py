@@ -321,11 +321,11 @@ def tutorial_progress(user, screen, game_menu):
                 if game_menu.active_panel != 'upgrades':
                     # If not in the upgrades panel, point to the 'Upgrades' navigation button.
                     upgrades_button = game_menu.nav_buttons[1] # 'Upgrades' button
-                    draw_tutorial_hint(screen, upgrades_button.rect, "Time to upgrade!", 'right')
+                    draw_tutorial_hint(screen, upgrades_button.rect, "You need to upgrade!", 'right')
                 else:
                     # If in the upgrades panel, point to the first upgrade's buy button.
                     first_upgrade_row = game_menu.upgrades_rows[0]
                     buy_button_rect = first_upgrade_row['btn'].rect
-                    draw_tutorial_hint(screen, buy_button_rect, "Boost your income!", 'left')
+                    draw_tutorial_hint(screen, buy_button_rect, "Boost your income by 10x, stackable!", 'left')
     
 
