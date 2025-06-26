@@ -36,10 +36,11 @@ SAVE_DIR = "savestates/save_data.json"
 
 # Blues (light to dark)
 LIGHT_BLUE = (173, 216, 230)
+ALICEBLUE = (240, 248, 255)
 SKY_BLUE = (135, 206, 235) 
 BLUE = (0, 0, 255)
 NAVY = (0, 0, 128)
-ALICEBLUE = (240, 248, 255)
+
 
 # Reds/Pinks (light to dark)
 LIGHT_PINK = (255, 182, 193)
