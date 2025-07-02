@@ -53,7 +53,7 @@ pip install pygame-ce ntplib
 ```
 assets/          Game art, fonts and sounds
 savestates/      Save file storage (`save_data.json`)
-main.py          Entry point for the game
+__main__.py          Entry point for the game
 *.py             Game logic, UI and helper modules
 ```
 
@@ -66,11 +66,11 @@ The `assets` folder must remain in the same directory as `main.py` so that image
 3. From the repository root, run:
 
 ```bash
-python main.py
+python __main__.py
 ```
 If that doesn't work depending on your system, you may need to append a number at the end of python; e.g.
 ```bash
-python3 main.py
+python3 __main__.py
 ```
 
 The game window should open and you can start playing. Progress will be saved when you exit.
