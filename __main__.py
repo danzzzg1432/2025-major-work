@@ -15,6 +15,9 @@ import time
 pygame.init()
 pygame.mixer.init()
 
+# Set window/task-bar icon
+icon_surf = pygame.image.load(resource_path("assets/images/ittmainmenu.png")).convert_alpha()
+pygame.display.set_icon(icon_surf)
 
 try:
     if DEBUG_MODE:
