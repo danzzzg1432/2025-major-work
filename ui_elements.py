@@ -31,11 +31,18 @@ class Button: # global button class
         self.border_radius = border_radius
 
     def create_hover_icon(self): # creates a greyed-out version of the icon for hover effects
+        """Build and store a dimmed (grey-tinted) copy of ``self.icon_image``.
+
+        This variant is displayed whenever the mouse hovers over the button,
+        giving the player a subtle visual cue.  Done via
+        ``BLEND_RGB_MULT`` which multiplies every pixel by ``GRAY``.
+        """
         if self.icon_image:
             self.hover_icon_image = self.icon_image.copy()
             self.hover_icon_image.fill(GRAY, special_flags=pygame.BLEND_RGB_MULT)
 
     def draw(self, screen: pygame.Surface): # draws the button on the screen
+        """Render the button – shadow, body, optional icon and label – to *screen*."""
         if self.display_callback: # if display_callback is set, use it to get the text.
             self.text = self.display_callback()
         pygame.draw.rect(screen, self.shadow_colour, self.rect_shadow, border_radius=self.border_radius) # draw the shadow
@@ -71,6 +78,7 @@ class Button: # global button class
             screen.blit(text_surf, text_rect)
     
     def is_hovered(self, pos): # checks if the mouse is hovering over any rect
+        """Return True if *pos* is inside the button's rect (helper for hover logic)."""
         return self.rect.collidepoint(pos) 
     
     def click(self):
@@ -125,6 +133,12 @@ class CreateFrect:
                 self.shadow_colour = None
 
     def render_text(self, position="center", display=None): # render text inside the frect
+        """Render the frect's text into a surface/rect pair.
+
+        A small *position_bank* maps friendly position strings ("midleft" etc.)
+        to the actual ``pygame.Rect`` attributes so callers don't have to
+        remember exact attribute names (though hardly used )
+        """
         position_bank = {
         "center": "center",
         "topleft": "topleft",

@@ -27,6 +27,17 @@ class StateManager: # global state manager
         self.music_player = music_player
 
     def set_state(self, new_state_name, pass_back=None, topic=None, original_state=None): # set the state of the game
+        """Switch the game into a new *state* and prime that state's context.
+
+        The menu system uses a simple stack-less state machine where each screen is
+        represented by an object inside ``self.states``.  When we transition we
+        not only flip ``self.state`` but also –
+
+        Pass *breadcrumb* information (``pass_back``) so that nested menus
+        know where to return.
+        Forward *topic* / *original_state* data for the contextual help
+        system.
+        """
         self.state = new_state_name # Update current active state name
         pygame.display.set_caption(f"{GAME_TITLE} - {new_state_name.replace('_', ' ').title()}") # set the window title to the current state
 
@@ -240,6 +251,9 @@ class GameMenu:
         LEFT_COL_X = NAV_BAR_WIDTH + MARGIN_X # Starting X for the left column of generators
         RIGHT_COL_X = LEFT_COL_X + COLUMN_WIDTH + INTER_COLUMN_GAP # Starting X for the right column of generators
         
+        # ⇢ LAMBDA CAPTURING NOTE: Each UI element created below stores a lambda
+        #   that refers to the generator it belongs to.  
+
         for g_id, proto in GENERATOR_PROTOTYPES.items():
             col_x = LEFT_COL_X  if idx % 2 == 0 else RIGHT_COL_X
             row_y = 180 + (idx//2) * ROW_HEIGHT
@@ -333,6 +347,16 @@ class GameMenu:
 
     # event handling ──────────────────────────────────────────────────────────
     def handle_events(self, events): 
+        """Centralised input handling for the Game screen.
+
+        The logic is intentionally hierarchical:
+        1. Global quit events.
+        2. Navigation column (always visible).
+        3. Active *modal* panel (shop / upgrades) – we swallow clicks that fall
+           within the panel's rect to prevent accidental interaction with the
+           underlying generator grid.
+        4. Default generator grid interactions when no panel is open.
+        """
         for e in events:
             if e.type == pygame.QUIT:
                 SaveStates.save_all(self.user, self.state_manager.music_player)
@@ -484,6 +508,9 @@ class GameMenu:
     def build_shop_menu(self):
         rows = []
         y0, row_h = 135, 65  
+        # As with the generator grid we bind loop variables into the lambdas via
+        # default arguments so that each callback references the correct
+        # manager row.
         # create the rows for the shop menu
         for idx, (gid, mproto) in enumerate(MANAGER_PROTOTYPES.items()):
             y = y0 + idx*row_h
@@ -588,6 +615,8 @@ class GameMenu:
         y0, row_h = 135, 65 
         x_start = 270
         
+        # Default-argument lambda capture again – ensures each upgrade button
+        # operates on the row it was created for.
         # Create the single x10 multiplier header at the top
         multiplier = CreateFrect(
             x_start + 700,  # Align with buy buttons
@@ -716,6 +745,7 @@ class GameMenu:
 
 
 class SettingsMenu:
+    """Overlay that exposes music playback & volume controls within the game."""
     def __init__(self, screen, user, state_manager, music_player, pass_back=None):
         self.screen = screen
         self.user = user
@@ -901,6 +931,7 @@ class SettingsMenu:
         
 
 class HelpMenu: # menu for help topics, methods are all self-explanatory
+    """Top-level help screen that lets the player choose a topic."""
     def __init__(self, screen, user, state_manager, pass_back=None):
         self.screen = screen
         self.user = user
@@ -990,6 +1021,7 @@ class HelpMenu: # menu for help topics, methods are all self-explanatory
 
 
 class HelpDetailMenu: # menu for help topics, methods are all self-explanatory
+    """Detailed, formatted page explaining a single help topic."""
     def __init__(self, screen, user, state_manager, topic=None, original_state=None):
         self.screen = screen
         self.user = user

@@ -50,35 +50,36 @@ def simulate_offline_progress(user): # simulate offline progress for the user
                 remaining_offline_time_for_gen = time_elapsed_offline # the time elapsed since the last save
                 effective_time_for_cycle = gen.get_effective_time(user.generators) # the effective time for a cycle
 
+                # ── Phase 1: finish a cycle that was already in-progress when the game closed.
                 if gen.is_generating: # Cycle was in progress
-                    if gen.time_progress <= remaining_offline_time_for_gen: # if the cycle was in progress and the time elapsed is greater than the time progress
-                        user.money += gen.cycle_output # Add money for this completed cycle
-                        lets_see += gen.cycle_output # for debugging
-                        remaining_offline_time_for_gen -= gen.time_progress # subtract the time progress from the remaining time
-                        gen.is_generating = False # reset the generating state
+                    if gen.time_progress <= remaining_offline_time_for_gen: # the cycle could finish while offline
+                        user.money += gen.cycle_output
+                        lets_see += gen.cycle_output # debug accumulation
+                        remaining_offline_time_for_gen -= gen.time_progress
+                        gen.is_generating = False
                     else:
-                        gen.time_progress -= remaining_offline_time_for_gen # subtract the remaining time from the time progress
-                        remaining_offline_time_for_gen = 0 # reset the remaining time
+                        gen.time_progress -= remaining_offline_time_for_gen
+                        remaining_offline_time_for_gen = 0
                 
-                # If managed, or if a cycle just finished, and there's time left, run subsequent cycles
-                if (gen.id in user.managers or not gen.is_generating) and remaining_offline_time_for_gen > 0: # if the generator is managed or not generating and there is time left
-                    if not gen.is_generating and gen.id in user.managers: # if the generator is not generating and is managed
-                        gen.start_generation_cycle(user.generators) # start a new cycle
+                # ── Phase 2: run full cycles that fit entirely into the remaining offline window.
+                if (gen.id in user.managers or not gen.is_generating) and remaining_offline_time_for_gen > 0:
+                    if not gen.is_generating and gen.id in user.managers:
+                        gen.start_generation_cycle(user.generators)
                     
-                    if gen.is_generating: # if the generator is generating
-                        num_full_cycles_offline = int(remaining_offline_time_for_gen // effective_time_for_cycle) # the number of full cycles that can be completed
-                        if num_full_cycles_offline > 0: # if there are full cycles
-                            user.money += gen.cycle_output * num_full_cycles_offline # add money for the full cycles
-                            lets_see += gen.cycle_output * num_full_cycles_offline # for debugging
-                            remaining_offline_time_for_gen -= num_full_cycles_offline * effective_time_for_cycle # subtract the effective time for the full cycles from the remaining time
+                    if gen.is_generating:
+                        num_full_cycles_offline = int(remaining_offline_time_for_gen // effective_time_for_cycle)
+                        if num_full_cycles_offline > 0:
+                            user.money += gen.cycle_output * num_full_cycles_offline
+                            lets_see += gen.cycle_output * num_full_cycles_offline
+                            remaining_offline_time_for_gen -= num_full_cycles_offline * effective_time_for_cycle
                         
-                        # Update progress of the current (potentially new) cycle
-                        if remaining_offline_time_for_gen > 0: # if there is time left
-                            gen.time_progress -= remaining_offline_time_for_gen # subtract the remaining time from the time progress
-                        else: # if all time used up by full cycles
-                            gen.is_generating = False # reset the generating state
-                            if gen.id in user.managers: # if the generator is managed   
-                                gen.start_generation_cycle(user.generators) # restart the cycle
+                        # ── Phase 3: account for partial progress into the *next* cycle.
+                        if remaining_offline_time_for_gen > 0:
+                            gen.time_progress -= remaining_offline_time_for_gen
+                        else:
+                            gen.is_generating = False
+                            if gen.id in user.managers:
+                                gen.start_generation_cycle(user.generators)
         print(f"\nOffline progress added: ${lets_see}") if DEBUG_MODE else None
 
     except Exception as e:
@@ -135,6 +136,10 @@ class Music:
                 print(f"Error loading/playing music {self.playlist[self.current_song_index]}: {e}")
 
     def update(self):
+        """Poll the mixer each frame and advance to the next track when the current one finishes.
+
+        The playlist is reshuffled at the end to keep background music fresh.
+        """
         if not pygame.mixer.music.get_busy() and not self.is_paused:
             self.current_song_index += 1 # increment the current song index to avoid playing the same song twice (when choosing a random song)
             if self.current_song_index >= len(self.playlist):
@@ -143,6 +148,7 @@ class Music:
             self.play_current_song()
 
     def set_volume(self, volume_level):
+        """Clamp *volume_level* to 0–1, store, and forward to the mixer."""
         self.volume = max(0.0, min(1.0, volume_level))
         pygame.mixer.music.set_volume(self.volume)
 
@@ -150,6 +156,7 @@ class Music:
         return self.volume
 
     def play(self):
+        """Resume playback – either by starting the current song or unpausing."""
         if not pygame.mixer.music.get_busy(): # Not playing
             self.play_current_song()
         elif self.is_paused: # if paused, unpause
@@ -157,21 +164,25 @@ class Music:
             self.is_paused = False
 
     def pause(self):
+        """Soft-pause the current track (retain mixer position)."""
         if pygame.mixer.music.get_busy() and not self.is_paused:
             pygame.mixer.music.pause()
             self.is_paused = True
 
     def toggle_pause(self): # Added to toggle play/pause
+        """Convenience wrapper to flip between *play* and *pause*."""
         if self.is_paused:
             self.play() # unpauses
         else:
             self.pause()
 
     def skip_song(self): # Added to skip to the next song
+        """Jump to the next track in the playlist (loops at end)."""
         self.current_song_index = (self.current_song_index + 1) % len(self.playlist)
         self.play_current_song()
 
     def rewind_song(self): # Added to go to the previous song or restart current
+        """Restart current song, or go to previous one if near the start."""
         if pygame.mixer.music.get_pos() > 3000: # more than 3 seconds played
             self.play_current_song() # Restart current song
         else:
@@ -179,16 +190,19 @@ class Music:
             self.play_current_song()
 
     def get_current_song_display_name(self): # Added to get a displayable song name
+        """Return the current track's filename prettified for UI display."""
         full_path = self.playlist[self.current_song_index]
         file_name = os.path.basename(full_path)
         name_without_extension, _ = os.path.splitext(file_name)
         return name_without_extension.replace("_", " ").title() # Basic formatting
 
     def stop(self):
+        """Hard-stop playback and clear paused flag."""
         pygame.mixer.music.stop()
         self.is_paused = False # Reset pause state
         
     def to_dict(self):
+        """Serialise music settings for save-file support."""
         return {
             "volume": self.volume,
             "is_paused": self.is_paused,
@@ -196,6 +210,7 @@ class Music:
     
     @classmethod
     def from_dict(cls, data):
+        """Re-create a *Music* instance from saved data without auto-playing."""
         instance = cls(volume=data.get("volume", 0.50), start_playing=False)
         instance.is_paused = data.get("is_paused", False)
 

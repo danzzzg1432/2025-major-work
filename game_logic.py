@@ -1,9 +1,15 @@
 from game_constants import *
 
 def apply_upgrades(user):
-    """
-    Calculates and updates levels for ALL generators based on their specific
-    and the current global upgrade tiers with stacking multipliers
+    """Update every generator's *level* based on current upgrade thresholds.
+
+    For each generator we compute the highest unlocked:
+    • *Specific* multiplier – milestones found in ``GENERATOR_UPGRADES[id]``.
+    • *Global*  multiplier – milestones shared by every generator.  These only apply when *all*
+      generators meet a given threshold.
+
+    The final level for a generator is ``specific × global``.  This function is called whenever a
+    purchase might unlock a new milestone.
     """
 
     highest_achieved_global_multiplier = 1  # Start with base multiplier of 1
@@ -25,9 +31,11 @@ def apply_upgrades(user):
 
 
 class Generator:
-    """
-    Represents the money-generating entity in the game. 
-    
+    """A single money-making entity.
+
+    Each generator has a *cost* that scales geometrically, a *cycle time* that can be shortened by
+    milestones, and a *level* that multiplies its base payout.  The player can own many instances of
+    the same generator (``amount``).
     """
     def __init__(self, id, name, base_rate, base_price, base_time, level=1, amount=0, growth_rate=1.07, time_progress=0.0, is_generating=False, revenue_multiplier=1, revenue_multiplier_purchases=0):
         self.id = id
@@ -108,10 +116,17 @@ class Generator:
         return int(self.base_price * (self.growth_rate ** self.amount))
     
     def buy(self, user, quantity=1):
+        """Attempt to purchase *quantity* new generators.
+
+        The price of each successive generator is geometric.  Rather than looping and summing each
+        individual price we use the closed-form expression for the finite geometric series to
+        compute the *total* cost in constant time.
+        """
         a = self.base_price * (self.growth_rate ** self.amount)
         n = quantity
         if self.growth_rate != 1:
-            total_cost = int(a * (1 - (self.growth_rate)**n) / (1 - (self.growth_rate))) # geometric series sum formula. if you need me to prove this, ask me
+            # Geometric-series closed form:  Sₙ = a × (1 − rⁿ) / (1 − r)
+            total_cost = int(a * (1 - (self.growth_rate)**n) / (1 - (self.growth_rate)))
         else:
             total_cost = int(a * n)
         if user.money >= total_cost:
@@ -123,11 +138,23 @@ class Generator:
         return False
 
     def get_next_revenue_multiplier_price(self):
+        """Calculate the cost of the **next** ×10 revenue multiplier.
+
+        Each purchase scales exponentially by ``REVENUE_MULTIPLIER_GROWTH_FACTOR`` to keep
+        upgrades meaningful.  We never look at the *current* multiplier value here – only how
+        many times the player has already bought the upgrade.
+        """
         base_price = REVENUE_MULTIPLIER_BASE_PRICES[self.id]
         price = base_price * (REVENUE_MULTIPLIER_GROWTH_FACTOR ** self.revenue_multiplier_purchases)
         return price
 
     def buy_revenue_multiplier(self, user):
+        """Attempt to buy a ×10 revenue multiplier for this generator.
+
+        This upgrade multiplies the generator's payout *after* all other bonuses.  It is therefore
+        extremely powerful and priced accordingly.  The method debits the player's wallet and
+        updates ``revenue_multiplier`` & ``revenue_multiplier_purchases`` if affordable.
+        """
         cost = self.get_next_revenue_multiplier_price()
         if self.id not in user.generators:
             return False
@@ -139,6 +166,7 @@ class Generator:
         return False
 
     def to_dict(self):
+        """Serialise the generator so it can be written to JSON save data."""
         return { 
                 "id": self.id,
                 "level": self.level,
@@ -168,12 +196,22 @@ class Generator:
         )
         
 class Manager:
+    """Unlocks automation for a specific generator.
+
+    When hired, the corresponding generator restarts its cycle automatically, allowing completely
+    passive income.
+    """
     def __init__(self, id, name, cost):
         self.id = id
         self.name = name
         self.cost = cost
         
     def buy(self, user):
+        """Hire this manager, automating its linked generator.
+
+        On success we also kick-start the generator's production cycle so the player immediately
+        benefits from the automation.
+        """
         if user.money >= self.cost:
             user.money -= self.cost
             user.managers[self.id] = self
@@ -184,6 +222,7 @@ class Manager:
         return False
 
     def to_dict(self):
+        """Serialise the manager for saving."""
         return { "id": self.id }
     
     @classmethod
@@ -193,9 +232,7 @@ class Manager:
         
         
 class User:
-    """
-    The current user class. Handles the generators, managers and money owned.
-    """
+    """Represents the player – wallet, assets and tutorial flags."""
     def __init__(self, money=0.0):
         self.generators = {}
         self.money = float(money)
@@ -203,6 +240,11 @@ class User:
         self.tutorial_state = {"first_generator": False, "first_manual_generation": False, "first_manager": False, "first_upgrade": False, "help_menu_opened": False} # Tracks the player's progress through the tutorial
         
     def manual_generate(self, generator_id):
+        """Manually trigger a generation cycle for *generator_id*.
+
+        The first manual click is part of the tutorial, so we also advance the tutorial state when
+        appropriate.
+        """
         self.ensure_generator(generator_id)
         # Check and update the tutorial state for the first manual generation.
         if generator_id == "g1" and self.tutorial_state.get("first_generator") and not self.tutorial_state.get("first_manual_generation"):
@@ -210,6 +252,7 @@ class User:
         return self.generators[generator_id].manual_generate(self)
     
     def buy_generator(self, generator_id, quantity=1):
+        """Buy one or more generators and update tutorial progress if this is the player's first."""
         self.ensure_generator(generator_id)
         if self.generators[generator_id].buy(self, quantity):
             # If the first generator is bought, update the tutorial state.
@@ -217,6 +260,7 @@ class User:
                 self.tutorial_state["first_generator"] = True
         
     def ensure_generator(self, generator_id):
+        """Lazily create the *Generator* instance the first time it is referenced."""
         if generator_id not in self.generators:
             prototype = GENERATOR_PROTOTYPES[generator_id] 
             self.generators[generator_id] = Generator(
@@ -228,6 +272,7 @@ class User:
             )
         
     def buy_manager(self, manager_id):
+        """Purchase a manager, unlocking automation for the corresponding generator."""
         if manager_id in self.managers:
             return False
         if manager_id not in self.generators or self.generators[manager_id].amount == 0:
@@ -244,6 +289,7 @@ class User:
             return False
         
     def buy_generator_revenue_multiplier(self, generator_id):
+        """Purchase the ×10 revenue multiplier upgrade for the selected generator."""
         self.ensure_generator(generator_id)
         if self.generators[generator_id].buy_revenue_multiplier(self):
             # If the first upgrade is bought, update the tutorial state.
@@ -253,11 +299,21 @@ class User:
         return False
 
     def update(self, dt_seconds):
+        """Advance game logic by *dt_seconds*.
+
+        Invokes ``update`` on every owned generator so they can tick down their internal timers and
+        payout when cycles finish.
+        """
         for gen_id_placeholder, gen in self.generators.items():
             gen.update(dt_seconds, self) # Call generator's own update method
             
     @property 
     def income_per_second(self):
+        """Aggregate passive income from *managed* generators.
+
+        Unmanaged generators are not counted here because they require manual clicks to start their
+        cycles.  This value is mainly used for UI display purposes.
+        """
         total_income_rate = 0.0
         for gen_id, gen in self.generators.items():
             if gen_id in self.managers and gen.amount > 0: # Only count managed generators for passive income
@@ -268,6 +324,7 @@ class User:
         return total_income_rate
     
     def to_dict(self):
+        """Serialise the entire user state for saving to disk."""
         return {
             "money": self.money,
             "generators": [generator.to_dict() for generator in self.generators.values()],
@@ -276,6 +333,7 @@ class User:
         }
         
     def debug_generators(self):
+        """Print a nicely formatted dump of generator state to the console (debug-only helper)."""
         print("---- Debug Generators Info ----")
         for gen_id, generator in self.generators.items():
             manager = self.managers.get(gen_id)
@@ -286,6 +344,7 @@ class User:
     
     @classmethod
     def from_dict(cls, data):
+        """Re-create a *User* instance from previously saved JSON data."""
         user = cls(data.get("money", 0.0))
         # Load the tutorial state
         user.tutorial_state = data.get("tutorial_state", {"first_generator": False, "first_manual_generation": False, "first_manager": False, "first_upgrade": False})

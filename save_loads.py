@@ -8,10 +8,7 @@ from utils import Music
 
 timecontroller = NTPTimer()  # Initialise the NTP timer to get the current time from an NTP server
 class SaveStates:
-    """
-    This is the "class" that handles the writing and reading to disk.
-    Organised here are the static methods (methods that arent inherently required to be in this class but make reasonable sense to be) for clarity.
-    """
+    """Static helpers for saving and loading persistent JSON data."""
     @staticmethod
     def get_path():
         if getattr(sys, 'frozen', False):
